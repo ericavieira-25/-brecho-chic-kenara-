@@ -7,6 +7,7 @@
 
 import { getSupplierById, getSupplierByName } from './suppliers.js';
 import { isProductAvailable } from './productAvailabilityService.js';
+import { products as localProducts } from './products.js';
 
 const API_URL = '/api/products';
 async function request(url, options = {}) {
@@ -128,7 +129,7 @@ export async function getAllProducts() {
       error
     );
 
-    return [];
+    return localProducts.map(enrichProduct);
   }
 
 }
