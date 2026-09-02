@@ -1,0 +1,361 @@
+/* =========================================================
+   ADMIN LOGIN
+   Brechó Chic Kenara
+   ========================================================= */
+
+.page {
+  min-height: calc(100vh - 80px);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 3rem 1.5rem;
+
+background: var(--color-bg);
+}
+
+/* =========================================================
+   CARD
+   ========================================================= */
+
+.card {
+  width: 100%;
+  max-width: 480px;
+
+  padding: 3rem;
+
+  background: var(--color-surface);
+
+  border: 1px solid var(--color-border-subtle);
+
+  border-radius: 24px;
+
+  box-shadow:
+    0 20px 50px rgba(70, 45, 25, 0.12);
+
+  text-align: center;
+}
+
+/* =========================================================
+   ÍCONE
+   ========================================================= */
+
+.icon {
+  width: 76px;
+  height: 76px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin: 0 auto 1.5rem;
+
+  border-radius: 50%;
+
+  background: var(--color-primary-xlight);
+
+  font-size: 2.5rem;
+
+  box-shadow:
+    0 8px 25px rgba(70, 45, 25, 0.08);
+}
+
+/* =========================================================
+   CABEÇALHO
+   ========================================================= */
+
+.header {
+  margin-bottom: 2rem;
+}
+
+.eyebrow {
+  display: block;
+
+  margin-bottom: 0.5rem;
+
+  color: var(--color-primary);
+
+  font-size: var(--text-xs);
+
+  font-weight: var(--font-weight-bold);
+
+  letter-spacing: 0.12em;
+}
+
+.header h1 {
+  margin: 0;
+
+  color: var(--color-text);
+
+  font-family: var(--font-primary);
+
+  font-size: var(--text-3xl);
+
+  line-height: 1.15;
+
+  letter-spacing: -0.025em;
+}
+
+.header p {
+  margin: 0.75rem 0 0;
+
+  color: var(--color-text-muted);
+
+  font-size: var(--text-sm);
+
+  line-height: 1.6;
+}
+
+/* =========================================================
+   FORMULÁRIO
+   ========================================================= */
+
+.form {
+  display: flex;
+  flex-direction: column;
+
+  gap: 1.25rem;
+
+  text-align: left;
+}
+
+/* =========================================================
+   CAMPOS
+   ========================================================= */
+
+.field {
+  display: flex;
+  flex-direction: column;
+
+  gap: 0.5rem;
+}
+
+.field label {
+  color: var(--color-text);
+
+  font-size: var(--text-sm);
+
+  font-weight: var(--font-weight-semibold);
+}
+
+.field input {
+  width: 100%;
+
+  box-sizing: border-box;
+
+  min-height: 48px;
+
+  padding: 0.75rem 0.9rem;
+
+  border: 1.5px solid var(--color-border);
+
+  border-radius: var(--radius-md);
+
+  background: var(--color-surface);
+
+  color: var(--color-text);
+
+  font-family: inherit;
+
+  font-size: var(--text-sm);
+
+  outline: none;
+
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    background var(--transition-fast);
+}
+
+.field input::placeholder {
+  color: var(--color-text-muted);
+
+  opacity: 0.7;
+}
+
+.field input:hover {
+  border-color: var(--color-primary-light);
+}
+
+.field input:focus {
+  border-color: var(--color-primary);
+
+  box-shadow:
+    0 0 0 3px var(--color-primary-xlight);
+}
+
+.field input:disabled {
+  cursor: not-allowed;
+
+  opacity: 0.65;
+}
+
+/* =========================================================
+   ERRO
+   ========================================================= */
+
+.error {
+  margin: 0;
+
+  padding: 0.8rem 1rem;
+
+  border: 1px solid rgba(180, 70, 60, 0.25);
+
+  border-radius: var(--radius-md);
+
+  background: rgba(180, 70, 60, 0.08);
+
+  color: #9b4036;
+
+  font-size: var(--text-sm);
+
+  line-height: 1.5;
+}
+
+/* =========================================================
+   BOTÃO
+   ========================================================= */
+
+.form button {
+  width: 100%;
+
+  margin-top: 0.25rem;
+}
+
+/* =========================================================
+   VOLTAR
+   ========================================================= */
+
+.back {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  margin-top: 1.5rem;
+
+  padding: 0;
+
+  border: 0;
+
+  background: transparent;
+
+  color: var(--color-text-muted);
+
+  font-family: inherit;
+
+  font-size: var(--text-sm);
+
+  cursor: pointer;
+
+  transition:
+    color var(--transition-fast),
+    opacity var(--transition-fast);
+}
+
+.back:hover {
+  color: var(--color-primary);
+}
+
+.back:disabled {
+  cursor: not-allowed;
+
+  opacity: 0.6;
+}
+
+/* =========================================================
+   AVISO
+   ========================================================= */
+
+.notice {
+  display: flex;
+  flex-direction: column;
+
+  gap: 0.3rem;
+
+  margin-top: 2rem;
+
+  padding: 1rem;
+
+  border: 1px solid var(--color-border-subtle);
+
+  border-radius: var(--radius-md);
+
+  background: var(--color-bg);
+
+  text-align: left;
+
+  font-size: var(--text-xs);
+
+  line-height: 1.5;
+}
+
+.notice strong {
+  color: var(--color-text);
+}
+
+.notice span {
+  color: var(--color-text-muted);
+}
+
+/* =========================================================
+   ACESSIBILIDADE
+   ========================================================= */
+
+.back:focus-visible,
+.field input:focus-visible {
+  outline: 2px solid var(--color-primary);
+
+  outline-offset: 3px;
+}
+
+/* =========================================================
+   RESPONSIVIDADE
+   ========================================================= */
+
+@media (max-width: 600px) {
+  .page {
+    min-height: auto;
+
+    padding: 2rem 1rem;
+  }
+
+  .card {
+    padding: 2rem 1.25rem;
+
+    border-radius: 20px;
+  }
+
+  .icon {
+    width: 64px;
+    height: 64px;
+
+    font-size: 2rem;
+  }
+
+  .header h1 {
+    font-size: var(--text-2xl);
+  }
+}
+
+@media (max-width: 400px) {
+  .page {
+    padding: 1.5rem 0.75rem;
+  }
+
+  .card {
+    padding: 1.5rem 1rem;
+  }
+}
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .field input,
+  .back {
+    transition: none;
+  }
+}

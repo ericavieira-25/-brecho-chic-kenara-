@@ -1,0 +1,283 @@
+.page {
+  min-height: 100vh;
+  padding: 32px;
+  background: #f7f4f0;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.eyebrow {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: #9a765c;
+}
+
+.header h1 {
+  margin: 0;
+  color: #30251f;
+  font-size: 36px;
+}
+
+.header p {
+  margin: 8px 0 0;
+  color: #776c65;
+}
+
+.addButton,
+.emptyButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 13px 20px;
+  border-radius: 10px;
+  background: #8d684f;
+  color: white;
+  text-decoration: none;
+  font-weight: 700;
+  transition: 0.2s ease;
+}
+
+.addButton:hover,
+.emptyButton:hover {
+  transform: translateY(-1px);
+  opacity: 0.92;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-bottom: 28px;
+}
+
+.summaryCard {
+  padding: 22px;
+  border: 1px solid #e8ded5;
+  border-radius: 14px;
+  background: white;
+  box-shadow: 0 5px 20px rgba(60, 40, 25, 0.05);
+}
+
+.summaryCard span {
+  display: block;
+  margin-bottom: 8px;
+  color: #7c7068;
+  font-size: 14px;
+}
+
+.summaryCard strong {
+  color: #30251f;
+  font-size: 27px;
+}
+
+.productsSection {
+  overflow: hidden;
+  border: 1px solid #e8ded5;
+  border-radius: 16px;
+  background: white;
+  box-shadow: 0 5px 20px rgba(60, 40, 25, 0.05);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 24px;
+  border-bottom: 1px solid #eee6df;
+}
+
+.sectionHeader h2 {
+  margin: 0;
+  color: #30251f;
+  font-size: 20px;
+}
+
+.refreshButton {
+  border: 1px solid #ded1c7;
+  border-radius: 8px;
+  padding: 9px 14px;
+  background: white;
+  color: #5d5149;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.refreshButton:hover {
+  background: #f8f4f0;
+}
+
+.tableWrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 900px;
+}
+
+.table th {
+  padding: 15px 20px;
+  text-align: left;
+  background: #faf8f6;
+  color: #756961;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.table td {
+  padding: 16px 20px;
+  border-top: 1px solid #eee8e3;
+  color: #51473f;
+  font-size: 14px;
+}
+
+.productInfo {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-width: 230px;
+}
+
+.productImage,
+.noImage {
+  width: 58px;
+  height: 70px;
+  flex-shrink: 0;
+  border-radius: 9px;
+  object-fit: cover;
+}
+
+.noImage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eee5dd;
+  font-size: 24px;
+}
+
+.productInfo strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #30251f;
+}
+
+.productInfo span {
+  display: block;
+  color: #8a7d74;
+  font-size: 12px;
+}
+
+.status {
+  display: inline-flex;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.available {
+  background: #e8f4ea;
+  color: #397044;
+}
+
+.unavailable {
+  background: #f7e7e5;
+  color: #9a4c43;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.editButton,
+.deleteButton {
+  border: 0;
+  border-radius: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.editButton {
+  background: #eee8e2;
+  color: #5e5148;
+}
+
+.deleteButton {
+  background: #f8e7e5;
+  color: #9b4e46;
+}
+
+.editButton:hover,
+.deleteButton:hover {
+  opacity: 0.8;
+}
+
+.empty {
+  padding: 70px 20px;
+  border: 1px solid #e8ded5;
+  border-radius: 16px;
+  background: white;
+  text-align: center;
+}
+
+.emptyIcon {
+  margin-bottom: 15px;
+  font-size: 48px;
+}
+
+.empty h2 {
+  margin: 0;
+  color: #30251f;
+}
+
+.empty p {
+  margin: 10px 0 24px;
+  color: #7c7068;
+}
+
+@media (max-width: 800px) {
+  .page {
+    padding: 20px 14px;
+  }
+
+  .header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .header h1 {
+    font-size: 30px;
+  }
+
+  .addButton {
+    width: 100%;
+  }
+
+  .summary {
+    grid-template-columns: 1fr;
+  }
+
+  .summaryCard {
+    padding: 18px;
+  }
+}

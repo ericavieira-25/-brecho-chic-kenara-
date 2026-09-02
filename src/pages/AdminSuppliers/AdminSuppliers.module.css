@@ -1,0 +1,210 @@
+/**
+ * AdminSuppliers.module.css
+ */
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: #f9f9f9;
+  min-height: calc(100vh - 200px);
+}
+
+.header {
+  margin-bottom: 2rem;
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 1rem;
+}
+
+.header h1 {
+  font-size: 2rem;
+  color: #333;
+  margin: 0;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  color: #666;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.tableWrapper {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow-x: auto;
+  margin-bottom: 2rem;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.table thead th {
+  background-color: #f5f5f5;
+  color: #333;
+  font-weight: 600;
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 2px solid #e0e0e0;
+  white-space: nowrap;
+  font-size: 0.9rem;
+}
+
+.table tbody td {
+  padding: 1rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.table tbody tr:hover {
+  background-color: #fafafa;
+}
+
+.cellName {
+  font-weight: 600;
+  color: #333;
+  width: 180px;
+}
+
+.cellStatus {
+  width: 100px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.badge-active {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.badge-inactive {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.cellNumber {
+  text-align: center;
+  width: 100px;
+}
+
+.cellMoney {
+  text-align: right;
+  font-family: 'Courier New', monospace;
+  font-weight: 500;
+  width: 130px;
+}
+
+.cellSupplier {
+  color: #0056b3;
+  background-color: #e7f3ff;
+}
+
+.cellAdmin {
+  color: #155724;
+  background-color: #e8f5e9;
+}
+
+.cellAction {
+  width: 120px;
+  text-align: center;
+}
+
+.viewLink {
+  display: inline-block;
+  padding: 0.35rem 0.75rem;
+  background-color: #007bff;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.viewLink:hover {
+  background-color: #0056b3;
+}
+
+.totalRow {
+  background-color: #f5f5f5;
+  border-top: 2px solid #e0e0e0;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.totalRow td {
+  font-weight: 700;
+  color: #333;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.emptyState {
+  background-color: white;
+  border-radius: 8px;
+  padding: 3rem;
+  text-align: center;
+  color: #999;
+  margin-bottom: 2rem;
+}
+
+.footer {
+  display: flex;
+  gap: 1rem;
+}
+
+.backLink {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background-color: #6c757d;
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: 600;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.backLink:hover {
+  background-color: #5a6268;
+  transform: translateY(-1px);
+}
+
+.backLink:active {
+  transform: translateY(0);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .header h1 {
+    font-size: 1.5rem;
+  }
+
+  .table {
+    font-size: 0.85rem;
+  }
+
+  .table thead th,
+  .table tbody td {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .cellName {
+    width: 120px;
+  }
+
+  .cellMoney {
+    width: 100px;
+  }
+}

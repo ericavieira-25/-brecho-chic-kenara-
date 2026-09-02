@@ -1,0 +1,586 @@
+/* =========================================================
+   CART — Brechó Chic Kenara
+   Layout responsivo para carrinho de compras
+   ========================================================= */
+
+.page {
+  background: var(--color-bg);
+  min-height: 60vh;
+  padding: var(--space-10) 0 var(--space-20);
+}
+
+.inner {
+  width: 100%;
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 var(--space-5);
+}
+
+@media (min-width: 768px) {
+  .inner {
+    padding: 0 var(--space-8);
+  }
+}
+
+/* =========================================================
+   TÍTULO
+   ========================================================= */
+
+.title {
+  margin: 0 0 var(--space-8);
+  font-size: var(--text-3xl);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+}
+
+/* =========================================================
+   ESTADO VAZIO
+   ========================================================= */
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-5);
+
+  min-height: 420px;
+  padding: var(--space-10) var(--space-4);
+
+  text-align: center;
+}
+
+.emptyIcon {
+  margin: 0;
+  font-size: 4rem;
+  line-height: 1;
+  opacity: 0.45;
+}
+
+.empty h2 {
+  margin: 0;
+  font-size: var(--text-2xl);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--color-text);
+}
+
+.empty p {
+  margin: 0;
+  max-width: 360px;
+  font-size: var(--text-base);
+  line-height: 1.6;
+  color: var(--color-text-light);
+}
+
+/* =========================================================
+   LAYOUT PRINCIPAL
+   ========================================================= */
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-8);
+  align-items: start;
+}
+
+@media (min-width: 1024px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr) 360px;
+  }
+}
+
+/* =========================================================
+   LISTA DE PRODUTOS
+   ========================================================= */
+
+.items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+/* =========================================================
+   ITEM DO CARRINHO
+   ========================================================= */
+
+.item {
+  position: relative;
+
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-4);
+
+  width: 100%;
+  min-width: 0;
+
+  padding: var(--space-4);
+
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-xl);
+
+  box-shadow: var(--shadow-xs);
+
+  transition:
+    box-shadow var(--transition-fast),
+    border-color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.item:hover {
+  border-color: var(--color-border);
+  box-shadow: var(--shadow-sm);
+}
+
+/* =========================================================
+   IMAGEM
+   ========================================================= */
+
+.thumb {
+  width: 90px;
+  height: 120px;
+
+  flex: 0 0 90px;
+
+  object-fit: cover;
+  object-position: center;
+
+  border-radius: var(--radius-lg);
+
+  background: var(--color-secondary);
+}
+
+@media (max-width: 639px) {
+  .thumb {
+    width: 78px;
+    height: 104px;
+    flex-basis: 78px;
+  }
+}
+
+/* =========================================================
+   INFORMAÇÕES DO PRODUTO
+   ========================================================= */
+
+.itemInfo {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-1);
+
+  min-width: 0;
+}
+
+.itemName {
+  margin: 0;
+
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-snug);
+
+  color: var(--color-text);
+
+  transition: color var(--transition-fast);
+
+  overflow-wrap: anywhere;
+}
+
+.itemName:hover {
+  color: var(--color-primary);
+}
+
+.itemMeta {
+  margin: 0;
+
+  font-size: var(--text-sm);
+  line-height: 1.5;
+
+  color: var(--color-text-muted);
+}
+
+.itemPrice {
+  margin: var(--space-2) 0 0;
+
+  font-family: var(--font-primary);
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-semibold);
+
+  color: var(--color-accent);
+}
+
+/* =========================================================
+   ÁREA DIREITA
+   ========================================================= */
+
+.itemRight {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+
+  gap: var(--space-3);
+
+  min-width: 120px;
+}
+
+/* =========================================================
+   CONTROLE DE QUANTIDADE
+   ========================================================= */
+
+.qty {
+  display: flex;
+  align-items: center;
+
+  overflow: hidden;
+
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+
+  background: var(--color-surface);
+}
+
+.qty button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 32px;
+  height: 32px;
+
+  padding: 0;
+
+  border: none;
+  background: transparent;
+
+  color: var(--color-text-light);
+
+  font-family: var(--font-body);
+  font-size: var(--text-lg);
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.qty button:hover:not(:disabled) {
+  background: var(--color-secondary);
+  color: var(--color-text);
+}
+
+.qty button:active:not(:disabled) {
+  background: var(--color-primary-xlight);
+}
+
+.qty button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.qty span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 28px;
+  min-width: 28px;
+  height: 32px;
+
+  border-left: 1px solid var(--color-border);
+  border-right: 1px solid var(--color-border);
+
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+
+  color: var(--color-text);
+}
+
+/* =========================================================
+   TOTAL DO ITEM
+   ========================================================= */
+
+.itemTotal {
+  margin: 0;
+
+  font-family: var(--font-primary);
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-bold);
+
+  color: var(--color-text);
+
+  white-space: nowrap;
+}
+
+/* =========================================================
+   REMOVER
+   ========================================================= */
+
+.removeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+
+  padding: 0;
+
+  border: none;
+  background: transparent;
+
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+
+  color: var(--color-text-muted);
+
+  cursor: pointer;
+
+  transition: color var(--transition-fast);
+}
+
+.removeBtn:hover {
+  color: var(--color-error);
+}
+
+.removeBtn:focus-visible,
+.qty button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* =========================================================
+   RESUMO DO PEDIDO
+   ========================================================= */
+
+.summary {
+  position: sticky;
+  top: calc(var(--header-height) + var(--space-4));
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+
+  padding: var(--space-6);
+
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-2xl);
+
+  box-shadow: var(--shadow-sm);
+}
+
+.summaryTitle {
+  margin: 0;
+
+  padding-bottom: var(--space-4);
+
+  border-bottom: 1px solid var(--color-border-subtle);
+
+  font-family: var(--font-primary);
+  font-size: var(--text-xl);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+
+  color: var(--color-text);
+}
+
+.summaryRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+
+  margin: 0;
+
+  font-size: var(--text-sm);
+  line-height: 1.5;
+
+  color: var(--color-text-light);
+}
+
+.summaryRow > span:last-child {
+  color: var(--color-text);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+/* =========================================================
+   FRETE GRÁTIS
+   ========================================================= */
+
+.free {
+  color: var(--color-success) !important;
+  font-weight: var(--font-weight-semibold) !important;
+}
+
+.freeHint {
+  margin: 0;
+
+  padding: var(--space-2) var(--space-3);
+
+  border: 1px solid var(--color-primary-light);
+  border-radius: var(--radius-md);
+
+  background: var(--color-primary-xlight);
+
+  color: var(--color-primary-dark);
+
+  font-size: var(--text-xs);
+  line-height: 1.5;
+
+  text-align: center;
+}
+
+/* =========================================================
+   TOTAL FINAL
+   ========================================================= */
+
+.totalRow {
+  margin-top: var(--space-1);
+  padding-top: var(--space-4);
+
+  border-top: 1px solid var(--color-border-subtle);
+
+  font-size: var(--text-lg);
+  font-weight: var(--font-weight-bold);
+
+  color: var(--color-text);
+}
+
+.totalRow > span:last-child {
+  font-size: var(--text-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-accent);
+}
+
+/* =========================================================
+   BOTÃO FINALIZAR
+   ========================================================= */
+
+.checkoutBtn {
+  width: 100%;
+  margin-top: var(--space-1);
+}
+
+/* =========================================================
+   CONTINUAR COMPRANDO
+   ========================================================= */
+
+.continueLink {
+  display: block;
+
+  text-align: center;
+  text-decoration: none;
+
+  font-size: var(--text-sm);
+
+  color: var(--color-text-muted);
+
+  transition: color var(--transition-fast);
+}
+
+.continueLink:hover {
+  color: var(--color-primary);
+}
+
+/* =========================================================
+   TABLET / MOBILE
+   ========================================================= */
+
+@media (max-width: 767px) {
+  .page {
+    padding-top: var(--space-8);
+  }
+
+  .title {
+    margin-bottom: var(--space-6);
+  }
+
+  .item {
+    gap: var(--space-3);
+    padding: var(--space-3);
+  }
+
+  .itemRight {
+    min-width: 96px;
+  }
+
+  .summary {
+    position: static;
+    padding: var(--space-5);
+  }
+}
+
+/* =========================================================
+   CELULAR PEQUENO
+   ========================================================= */
+
+@media (max-width: 479px) {
+  .inner {
+    padding: 0 var(--space-4);
+  }
+
+  .item {
+    display: grid;
+    grid-template-columns: 78px minmax(0, 1fr);
+    gap: var(--space-3);
+  }
+
+  .thumb {
+    grid-row: span 2;
+  }
+
+  .itemInfo {
+    align-self: start;
+  }
+
+  .itemRight {
+    grid-column: 2;
+
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+
+    min-width: 0;
+
+    gap: var(--space-2);
+  }
+
+  .qty {
+    justify-self: start;
+  }
+
+  .itemTotal {
+    justify-self: end;
+  }
+
+  .removeBtn {
+    grid-column: 1 / -1;
+    justify-self: end;
+  }
+
+  .empty {
+    min-height: 360px;
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
+/* =========================================================
+   ACESSIBILIDADE
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .item,
+  .qty button,
+  .removeBtn,
+  .itemName,
+  .continueLink {
+    transition: none;
+  }
+}

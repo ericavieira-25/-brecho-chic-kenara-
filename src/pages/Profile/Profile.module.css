@@ -1,0 +1,270 @@
+/* =========================================================
+   PERFIL — BRECHÓ CHIC KENARA
+========================================================= */
+
+.page {
+  min-height: calc(100vh - var(--header-height));
+  background: var(--color-bg);
+  padding: var(--space-10) 0 var(--space-20);
+}
+
+.inner {
+  width: min(640px, 100%);
+  margin: 0 auto;
+  padding: 0 var(--space-5);
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+/* =========================================================
+   TÍTULO
+========================================================= */
+
+.title {
+  margin: 0;
+  font-size: var(--text-3xl);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+}
+
+/* =========================================================
+   CARD DO USUÁRIO
+========================================================= */
+
+.card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+
+  width: 100%;
+  padding: var(--space-8);
+
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-2xl);
+
+  box-shadow: var(--shadow-sm);
+
+  transition:
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+/* =========================================================
+   AVATAR
+========================================================= */
+
+.avatar {
+  width: 96px;
+  height: 96px;
+
+  flex-shrink: 0;
+
+  overflow: hidden;
+  border-radius: 50%;
+
+  border: 3px solid var(--color-primary-light);
+
+  background: var(--color-secondary);
+
+  box-shadow: var(--shadow-md);
+}
+
+.avatar img {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+}
+
+/* =========================================================
+   INFORMAÇÕES DO USUÁRIO
+========================================================= */
+
+.info {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.name {
+  margin: 0;
+
+  font-size: var(--text-2xl);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+
+  color: var(--color-text);
+
+  overflow-wrap: anywhere;
+}
+
+.email {
+  margin: 0;
+
+  font-size: var(--text-base);
+  line-height: var(--line-height-normal);
+
+  color: var(--color-text-light);
+
+  overflow-wrap: anywhere;
+}
+
+.since {
+  margin: var(--space-1) 0 0;
+
+  font-size: var(--text-sm);
+  line-height: var(--line-height-normal);
+
+  color: var(--color-text-muted);
+}
+
+/* =========================================================
+   AÇÕES
+========================================================= */
+
+.actions {
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+
+  padding: var(--space-6);
+
+  background: var(--color-surface);
+
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-2xl);
+
+  box-shadow: var(--shadow-sm);
+}
+
+/* Garante que os botões ocupem toda a largura
+   quando o componente Button permitir */
+
+.actions button {
+  width: 100%;
+}
+
+/* =========================================================
+   BOTÃO DE SAIR
+========================================================= */
+
+.logoutBtn {
+  color: var(--color-error) !important;
+
+  border-color: transparent !important;
+
+  margin-top: var(--space-2);
+}
+
+.logoutBtn:hover {
+  background: var(--color-bg-subtle);
+  color: var(--color-error) !important;
+}
+
+/* =========================================================
+   RESPONSIVO — TABLET
+========================================================= */
+
+@media (max-width: 700px) {
+  .page {
+    padding: var(--space-8) 0 var(--space-16);
+  }
+
+  .inner {
+    padding: 0 var(--space-4);
+    gap: var(--space-6);
+  }
+
+  .title {
+    font-size: var(--text-2xl);
+  }
+
+  .card {
+    padding: var(--space-6);
+    gap: var(--space-5);
+  }
+}
+
+/* =========================================================
+   RESPONSIVO — CELULAR
+========================================================= */
+
+@media (max-width: 480px) {
+  .page {
+    padding: var(--space-6) 0 var(--space-12);
+  }
+
+  .inner {
+    padding: 0 var(--space-3);
+    gap: var(--space-5);
+  }
+
+  .title {
+    font-size: var(--text-2xl);
+  }
+
+  .card {
+    flex-direction: column;
+
+    align-items: center;
+
+    padding: var(--space-6);
+
+    text-align: center;
+  }
+
+  .avatar {
+    width: 88px;
+    height: 88px;
+  }
+
+  .info {
+    width: 100%;
+    align-items: center;
+  }
+
+  .name {
+    font-size: var(--text-xl);
+  }
+
+  .email {
+    font-size: var(--text-sm);
+  }
+
+  .since {
+    font-size: var(--text-xs);
+  }
+
+  .actions {
+    padding: var(--space-5);
+  }
+}
+
+/* =========================================================
+   ACESSIBILIDADE
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+
+  .card:hover {
+    transform: none;
+  }
+}

@@ -1,0 +1,327 @@
+/* =========================================================
+   PIX PAYMENT — Brechó Chic Kenara
+   ========================================================= */
+
+.page {
+  min-height: calc(100vh - 80px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+  background: var(--color-bg);
+}
+
+/* =========================================================
+   CARD PRINCIPAL
+   ========================================================= */
+
+.card {
+  width: 100%;
+  max-width: 650px;
+  box-sizing: border-box;
+  padding: 3rem;
+  text-align: center;
+
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 24px;
+
+  box-shadow: 0 20px 50px rgba(70, 45, 25, 0.12);
+}
+
+.icon {
+  font-size: 3.5rem;
+  line-height: 1;
+  margin-bottom: 1rem;
+}
+
+.title {
+  margin: 0 0 1rem;
+
+  font-family: var(--font-primary);
+  font-size: var(--text-3xl);
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+}
+
+.text {
+  max-width: 500px;
+  margin: 0 auto 2rem;
+
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+/* =========================================================
+   VALOR DO PEDIDO
+   ========================================================= */
+
+.valueBox {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  margin-bottom: 1.5rem;
+  padding: 1.25rem;
+
+  background: var(--color-primary-xlight);
+  border: 1px solid var(--color-primary-light);
+  border-radius: 16px;
+}
+
+.valueBox span {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.valueBox strong {
+  color: var(--color-primary-dark);
+  font-family: var(--font-primary);
+  font-size: 1.8rem;
+}
+
+/* =========================================================
+   QR CODE
+   ========================================================= */
+
+.qrPlaceholder {
+  margin-bottom: 1.5rem;
+  padding: 1.5rem;
+
+  background: var(--color-surface);
+  border: 1px dashed var(--color-primary);
+  border-radius: 16px;
+}
+
+.fakeQr {
+  width: 180px;
+  height: 180px;
+  margin: 0 auto 1rem;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background:
+    linear-gradient(45deg, #f5eee5 25%, transparent 25%),
+    linear-gradient(-45deg, #f5eee5 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #f5eee5 75%),
+    linear-gradient(-45deg, transparent 75%, #f5eee5 75%);
+
+  background-size: 28px 28px;
+  background-position:
+    0 0,
+    0 14px,
+    14px -14px,
+    -14px 0;
+
+  border: 8px solid var(--color-surface);
+  border-radius: 12px;
+
+  box-shadow: 0 5px 20px rgba(70, 45, 25, 0.08);
+
+  font-size: 1.4rem;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary-dark);
+}
+
+.qrPlaceholder p {
+  margin: 0;
+
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+/* =========================================================
+   PIX COPIA E COLA
+   ========================================================= */
+
+.pixCode {
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.pixCode label {
+  display: block;
+  margin-bottom: 0.6rem;
+
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.codeRow {
+  display: flex;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+
+.codeRow input {
+  flex: 1;
+  min-width: 0;
+  box-sizing: border-box;
+
+  padding: 0.8rem;
+
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  border-radius: 10px;
+
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+
+  outline: none;
+}
+
+.codeRow input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(184, 146, 106, 0.12);
+}
+
+.codeRow button {
+  flex-shrink: 0;
+
+  padding: 0.8rem 1rem;
+
+  border: none;
+  border-radius: 10px;
+
+  background: var(--color-primary);
+  color: #fff;
+
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+
+  cursor: pointer;
+
+  transition:
+    background var(--transition-fast),
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.codeRow button:hover {
+  background: var(--color-primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 5px 14px rgba(70, 45, 25, 0.12);
+}
+
+.codeRow button:active {
+  transform: translateY(0);
+}
+
+/* =========================================================
+   INFORMAÇÃO / STATUS
+   ========================================================= */
+
+.info {
+  margin-bottom: 1.5rem;
+  padding: 1.25rem;
+
+  text-align: left;
+
+  background: var(--color-primary-xlight);
+  border: 1px solid var(--color-primary-light);
+  border-radius: 16px;
+}
+
+.info strong {
+  display: block;
+  margin-bottom: 0.5rem;
+
+  color: var(--color-primary-dark);
+  font-size: var(--text-sm);
+}
+
+.info p {
+  margin: 0;
+
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  font-size: var(--text-sm);
+}
+
+/* =========================================================
+   AÇÕES
+   ========================================================= */
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.actions > * {
+  min-width: 190px;
+}
+
+/* =========================================================
+   RESPONSIVIDADE
+   ========================================================= */
+
+@media (max-width: 700px) {
+  .page {
+    min-height: auto;
+    padding: 2rem 1rem;
+  }
+
+  .card {
+    padding: 2rem 1.25rem;
+    border-radius: 20px;
+  }
+
+  .icon {
+    font-size: 3rem;
+  }
+
+  .title {
+    font-size: var(--text-2xl);
+  }
+
+  .text {
+    font-size: var(--text-sm);
+  }
+
+  .fakeQr {
+    width: 160px;
+    height: 160px;
+  }
+
+  .codeRow {
+    flex-direction: column;
+  }
+
+  .codeRow button {
+    width: 100%;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .actions > * {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 400px) {
+  .card {
+    padding: 1.5rem 1rem;
+  }
+
+  .valueBox,
+  .qrPlaceholder,
+  .info {
+    padding: 1rem;
+  }
+
+  .fakeQr {
+    width: 140px;
+    height: 140px;
+  }
+}

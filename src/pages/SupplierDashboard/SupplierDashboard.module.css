@@ -1,0 +1,338 @@
+/**
+ * SupplierDashboard.module.css
+ */
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: #f9f9f9;
+  min-height: calc(100vh - 200px);
+}
+
+.header {
+  margin-bottom: 2rem;
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 1rem;
+}
+
+.header h1 {
+  font-size: 2rem;
+  color: #333;
+  margin: 0;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  color: #666;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.subtitle strong {
+  color: #333;
+}
+
+/* Cards de Métricas */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.card {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-left: 4px solid #007bff;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.cardHeader h3 {
+  font-size: 0.9rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
+  font-weight: 600;
+}
+
+.icon {
+  font-size: 1.5rem;
+}
+
+.cardValue {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #007bff;
+  margin-bottom: 0.5rem;
+}
+
+.cardSubtext {
+  font-size: 0.85rem;
+  color: #999;
+}
+
+/* Seções */
+.section {
+  background: white;
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  margin-bottom: 2rem;
+}
+
+.section h2 {
+  font-size: 1.3rem;
+  color: #333;
+  margin: 0 0 1.5rem 0;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 0.75rem;
+}
+
+.emptyState {
+  background-color: #f9f9f9;
+  border-radius: 6px;
+  padding: 2rem;
+  text-align: center;
+  color: #999;
+}
+
+.emptyState p {
+  margin: 0;
+  font-size: 1rem;
+}
+
+/* Lista de Produtos */
+.productsList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.productCard {
+  background: #f9f9f9;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.productCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.productCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1rem;
+  background: white;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.productCardHeader h4 {
+  font-size: 0.95rem;
+  color: #333;
+  margin: 0;
+  flex: 1;
+  line-height: 1.4;
+}
+
+.availableBadge {
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  white-space: nowrap;
+  margin-left: 0.5rem;
+}
+
+.available {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.unavailable {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.productCardBody {
+  padding: 1rem;
+}
+
+.productCardBody p {
+  font-size: 0.85rem;
+  color: #666;
+  margin: 0.35rem 0;
+}
+
+.productCardBody strong {
+  color: #333;
+  font-weight: 600;
+}
+
+/* Tabela de Vendas */
+.ordersTableWrapper {
+  overflow-x: auto;
+}
+
+.ordersTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.ordersTable thead th {
+  background-color: #f5f5f5;
+  color: #333;
+  font-weight: 600;
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 2px solid #e0e0e0;
+  white-space: nowrap;
+}
+
+.ordersTable tbody td {
+  padding: 1rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.ordersTable tbody tr:hover {
+  background-color: #fafafa;
+}
+
+.cellId {
+  font-weight: 600;
+  color: #333;
+}
+
+.cellMoney {
+  text-align: right;
+  font-family: 'Courier New', monospace;
+  font-weight: 500;
+}
+
+.cellSupplier {
+  color: #0056b3;
+  background-color: #e7f3ff;
+  font-weight: 600;
+}
+
+.status {
+  display: inline-block;
+  padding: 0.35rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-entregue {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status-em_transito {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.status-processando {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+/* Nota de Segurança */
+.securityNote {
+  background-color: #e7f3ff;
+  border-radius: 8px;
+  padding: 1.5rem;
+  border-left: 4px solid #0056b3;
+  margin-top: 2rem;
+}
+
+.securityNote h3 {
+  font-size: 1rem;
+  color: #0056b3;
+  margin: 0 0 1rem 0;
+}
+
+.securityNote ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.securityNote li {
+  font-size: 0.9rem;
+  color: #0056b3;
+  padding: 0.35rem 0;
+  line-height: 1.6;
+}
+
+.error {
+  background: white;
+  border-radius: 8px;
+  padding: 3rem;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.error h2 {
+  color: #d9534f;
+  margin-bottom: 1rem;
+}
+
+.error p {
+  color: #666;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .header h1 {
+    font-size: 1.5rem;
+  }
+
+  .cards {
+    grid-template-columns: 1fr;
+  }
+
+  .productsList {
+    grid-template-columns: 1fr;
+  }
+
+  .ordersTable {
+    font-size: 0.85rem;
+  }
+
+  .ordersTable thead th,
+  .ordersTable tbody td {
+    padding: 0.75rem;
+  }
+
+  .cardValue {
+    font-size: 1.5rem;
+  }
+}

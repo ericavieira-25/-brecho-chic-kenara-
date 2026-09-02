@@ -1,0 +1,436 @@
+/* =========================================================
+   PRODUCT CARD — BRECHÓ CHIC KENARA
+   ========================================================= */
+
+.card {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  border-color: var(--color-border);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
+}
+
+/* =========================================================
+   IMAGEM
+   ========================================================= */
+
+.imageLink {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  aspect-ratio: 3 / 4;
+  background: var(--color-bg);
+  text-decoration: none;
+}
+
+.image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 300ms ease;
+}
+
+.card:hover .image {
+  transform: scale(1.035);
+}
+
+/* =========================================================
+   DESCONTO
+   ========================================================= */
+
+.discountBadge {
+  position: absolute;
+  top: var(--space-3);
+  left: var(--space-3);
+  z-index: 3;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 26px;
+  padding: 0 var(--space-2);
+
+  border-radius: var(--radius-full);
+
+  background: var(--color-primary);
+  color: #fff;
+
+  font-size: 11px;
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+}
+
+/* =========================================================
+   FAVORITOS
+   ========================================================= */
+
+.favoriteBtn {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  z-index: 5;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 36px;
+  height: 36px;
+
+  padding: 0;
+
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--color-text);
+
+  cursor: pointer;
+
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+
+  transition:
+    transform var(--transition-fast),
+    background var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.favoriteBtn:hover {
+  transform: scale(1.08);
+  background: #fff;
+}
+
+.favoriteBtn:active {
+  transform: scale(0.94);
+}
+
+.favoriteBtn.favorited {
+  color: var(--color-primary);
+}
+
+.favoriteBtn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* =========================================================
+   OVERLAY
+   ========================================================= */
+
+.overlay {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+
+  display: flex;
+  align-items: flex-end;
+
+  min-height: 35%;
+
+  padding: var(--space-4);
+
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.42),
+    rgba(0, 0, 0, 0)
+  );
+
+  opacity: 0;
+
+  pointer-events: none;
+
+  transition: opacity 200ms ease;
+}
+
+.card:hover .overlay {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.quickAdd {
+  width: 100%;
+  min-height: 40px;
+
+  padding: var(--space-2) var(--space-3);
+
+  border: 0;
+  border-radius: var(--radius-full);
+
+  background: #fff;
+  color: var(--color-text);
+
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+
+  cursor: pointer;
+
+  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.15);
+
+  transition:
+    transform var(--transition-fast),
+    background var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.quickAdd:hover {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.quickAdd:active {
+  transform: scale(0.98);
+}
+
+.quickAdd:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* =========================================================
+   INDISPONÍVEL
+   ========================================================= */
+
+.unavailable {
+  opacity: 0.82;
+}
+
+.unavailable:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.unavailableOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(30, 30, 30, 0.34);
+}
+
+.unavailableLabel {
+  padding: var(--space-2) var(--space-4);
+
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: var(--radius-full);
+
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--color-text);
+
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* =========================================================
+   INFORMAÇÕES
+   ========================================================= */
+
+.info {
+  display: flex;
+  flex-direction: column;
+
+  min-width: 0;
+
+  padding: var(--space-4);
+}
+
+/* =========================================================
+   BADGES / TAMANHO
+   ========================================================= */
+
+.badges {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+
+  min-height: 22px;
+
+  margin-bottom: var(--space-2);
+}
+
+.size {
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-weight: var(--font-weight-medium);
+}
+
+/* =========================================================
+   NOME
+   ========================================================= */
+
+.name {
+  display: -webkit-box;
+
+  margin: 0;
+
+  overflow: hidden;
+
+  color: var(--color-text);
+
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.4;
+
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+
+  transition: color var(--transition-fast);
+}
+
+.info a {
+  text-decoration: none;
+}
+
+.info a:hover .name {
+  color: var(--color-primary);
+}
+
+/* =========================================================
+   MARCA
+   ========================================================= */
+
+.brand {
+  margin: var(--space-1) 0 0;
+
+  overflow: hidden;
+
+  color: var(--color-text-muted);
+
+  font-size: 12px;
+  font-weight: var(--font-weight-medium);
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* =========================================================
+   LOCALIZAÇÃO
+   ========================================================= */
+
+.location {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  margin: var(--space-2) 0 0;
+
+  overflow: hidden;
+
+  color: var(--color-text-muted);
+
+  font-size: 11px;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* =========================================================
+   PREÇOS
+   ========================================================= */
+
+.prices {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+
+  margin-top: var(--space-3);
+}
+
+.price {
+  color: var(--color-text);
+
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-bold);
+}
+
+.originalPrice {
+  color: var(--color-text-muted);
+
+  font-size: 12px;
+
+  text-decoration: line-through;
+}
+
+.soldOut {
+  color: var(--color-text-muted);
+
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* =========================================================
+   RESPONSIVIDADE
+   ========================================================= */
+
+@media (max-width: 639px) {
+  .info {
+    padding: var(--space-3);
+  }
+
+  .favoriteBtn {
+    top: var(--space-2);
+    right: var(--space-2);
+
+    width: 32px;
+    height: 32px;
+  }
+
+  .discountBadge {
+    top: var(--space-2);
+    left: var(--space-2);
+
+    min-height: 24px;
+
+    font-size: 10px;
+  }
+
+  /*
+   * No celular não dependemos de hover
+   * para mostrar ações importantes.
+   */
+  .overlay {
+    display: none;
+  }
+}
+
+/* =========================================================
+   REDUÇÃO DE MOVIMENTO
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .image,
+  .favoriteBtn,
+  .quickAdd,
+  .overlay,
+  .name {
+    transition: none;
+  }
+
+  .card:hover {
+    transform: none;
+  }
+
+  .card:hover .image {
+    transform: none;
+  }
+}

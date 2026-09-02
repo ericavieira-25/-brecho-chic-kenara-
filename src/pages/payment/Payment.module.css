@@ -1,0 +1,242 @@
+/* =========================================================
+   PAYMENT — Brechó Chic Kenara
+   ========================================================= */
+
+.page {
+  min-height: calc(100vh - 80px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+  background: var(--color-bg);
+}
+
+/* =========================================================
+   CARD
+   ========================================================= */
+
+.card {
+  width: 100%;
+  max-width: 650px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 24px;
+  padding: 3rem;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(70, 45, 25, 0.12);
+}
+
+.icon {
+  font-size: 3.5rem;
+  line-height: 1;
+  margin-bottom: 1rem;
+}
+
+.title {
+  margin: 0 0 1rem;
+  font-family: var(--font-primary);
+  font-size: var(--text-3xl);
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+}
+
+.card > h1:not(.title) {
+  margin: 0 0 1rem;
+  color: var(--color-text);
+}
+
+.text {
+  max-width: 500px;
+  margin: 0 auto 2rem;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+/* =========================================================
+   RESUMO DO PEDIDO
+   ========================================================= */
+
+.orderBox {
+  margin-bottom: 1.5rem;
+  padding: 1.25rem;
+  text-align: left;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem 0;
+  color: var(--color-text-light);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.row strong {
+  color: var(--color-text);
+  text-align: right;
+}
+
+.pending {
+  color: #a66b17 !important;
+}
+
+/* =========================================================
+   FORMAS DE PAGAMENTO
+   ========================================================= */
+
+.info {
+  margin-bottom: 1.5rem;
+  padding: 1.5rem;
+  text-align: left;
+  background: var(--color-primary-xlight);
+  border: 1px solid var(--color-primary-light);
+  border-radius: 16px;
+}
+
+.info h3 {
+  margin: 0 0 1rem;
+  font-family: var(--font-primary);
+  font-size: var(--text-lg);
+  color: var(--color-text);
+}
+
+/* Cada opção de pagamento */
+
+.paymentOption {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  box-sizing: border-box;
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  border-radius: 14px;
+  cursor: pointer;
+  text-align: left;
+  transition:
+    border-color var(--transition-fast),
+    background var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.paymentOption:last-child {
+  margin-bottom: 0;
+}
+
+.paymentOption:hover {
+  border-color: var(--color-primary);
+  background: var(--color-surface);
+  box-shadow: 0 6px 18px rgba(70, 45, 25, 0.08);
+  transform: translateY(-1px);
+}
+
+.paymentOption input {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+.paymentOption span {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.paymentOption strong {
+  color: var(--color-text);
+  font-size: var(--text-base);
+}
+
+.paymentOption small {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  line-height: 1.4;
+}
+
+/* =========================================================
+   BOTÕES
+   ========================================================= */
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.actions > * {
+  min-width: 180px;
+}
+
+/* =========================================================
+   RESPONSIVIDADE
+   ========================================================= */
+
+@media (max-width: 700px) {
+  .page {
+    min-height: auto;
+    padding: 2rem 1rem;
+  }
+
+  .card {
+    padding: 2rem 1.25rem;
+    border-radius: 20px;
+  }
+
+  .icon {
+    font-size: 3rem;
+  }
+
+  .title {
+    font-size: var(--text-2xl);
+  }
+
+  .row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .row strong {
+    text-align: left;
+  }
+
+  .paymentOption {
+    padding: 0.9rem;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .actions > * {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 400px) {
+  .card {
+    padding: 1.5rem 1rem;
+  }
+
+  .orderBox,
+  .info {
+    padding: 1rem;
+  }
+}
