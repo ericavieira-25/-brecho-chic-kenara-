@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { useFavorites } from '../../context/FavoritesContext';
@@ -39,14 +39,46 @@ export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const product = getProductById(id);
+  const [product, setProduct] = useState(null);
+const [related, setRelated] = useState([]);
+const [loading, setLoading] = useState(true);
+useEffect(() => {
+  async function loadProduct() {
+  setLoading(true);
+
+  const foundProduct = await getProductById(id);
+
+  setProduct(foundProduct || null);
+
+  if (foundProduct) {
+    const relatedProducts = await getRelatedBySupplier(
+      foundProduct,
+      4
+    );
+
+    setRelated(relatedProducts);
+  } else {
+    setRelated([]);
+  }
+
+  setLoading(false);
+}
+
+  loadProduct();
+}, [id]);
 
   const { addItem } = useCart();
   const { toggleFavorite, isFavorite } = useFavorites();
 
   const [activeImg, setActiveImg] = useState(0);
   const [added, setAdded] = useState(false);
-
+if (loading) {
+  return (
+    <div className={styles.notFound}>
+      <h2>Carregando produto...</h2>
+    </div>
+  );
+}
   if (!product) {
     return (
       <div className={styles.notFound}>
@@ -85,7 +117,7 @@ export default function ProductDetail() {
   const favorited = isFavorite(product.id);
   const unavailable = product.available === false;
 
-  const related = getRelatedBySupplier(product, 4);
+
 
   const conditionVariant =
     {

@@ -166,7 +166,7 @@ export default function AddProduct() {
         createdBy: user.id,
       };
 
-      addProduct(product);
+      await addProduct(product);
 
       setSuccess(true);
       setForm(initialForm);

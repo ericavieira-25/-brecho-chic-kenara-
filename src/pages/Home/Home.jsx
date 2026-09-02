@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { useGuard } from '../../hooks/useGuard';
 import { USER_ROLES } from '../../data/roles';
 import { categories } from '../../data/categories';
@@ -10,9 +11,22 @@ import styles from './Home.module.css';
 export default function Home() {
   const { hasRole } = useGuard();
   const isAdmin = hasRole(USER_ROLES.ADMIN);
-  const newest = getNewestProducts(8);
-  const featured = getFeaturedProducts(4);
+  const [newest, setNewest] = useState([]);
+const [featured, setFeatured] = useState([]);
 
+useEffect(() => {
+  async function loadProducts() {
+    const [newestProducts, featuredProducts] = await Promise.all([
+      getNewestProducts(8),
+      getFeaturedProducts(4),
+    ]);
+
+    setNewest(newestProducts);
+    setFeatured(featuredProducts);
+  }
+
+  loadProducts();
+}, []);
   return (
     <div className={styles.page}>
 

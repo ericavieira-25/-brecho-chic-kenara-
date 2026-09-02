@@ -27,23 +27,44 @@ export function saveProducts(products) {
   }
 }
 
-export function addProduct(product) {
-  const products = getProducts();
+export async function addProduct(product) {
+  try {
+    const response = await fetch('http://localhost:3000/api/products', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: product.name,
+        category: product.category,
+        categoryName: product.categoryName,
+        size: product.size,
+        condition: product.condition,
+        conditionLabel: product.conditionLabel,
+        price: product.price,
+        originalPrice: product.originalPrice,
+        brand: product.brand,
+        description: product.description,
+        photo: product.photo,
+        supplierId: product.supplierId,
+        supplierName: product.supplierName,
+        createdBy: product.createdBy,
+        status: product.status || 'disponivel',
+      }),
+    });
 
-  const newProduct = {
-    ...product,
-    id: `product-${Date.now()}`,
-    createdAt: new Date().toISOString(),
-    status: 'disponivel',
-  };
+    if (!response.ok) {
+      throw new Error('Erro ao cadastrar produto na API.');
+    }
 
-  products.push(newProduct);
+    const data = await response.json();
 
-  saveProducts(products);
-
-  return newProduct;
+    return data.produto;
+  } catch (error) {
+    console.error('Erro ao cadastrar produto:', error);
+    throw error;
+  }
 }
-
 export function deleteProduct(productId) {
   const products = getProducts();
 

@@ -2,138 +2,369 @@
  * productService.js
  *
  * Camada central para acesso e regras de dados do catálogo.
- * Mantém compatibilidade com o código atual, mas prepara a arquitetura
- * para migração futura para backend real.
+ * Os produtos são carregados da API / PostgreSQL.
  */
 
-import { products } from './products.js';
 import { getSupplierById, getSupplierByName } from './suppliers.js';
 import { isProductAvailable } from './productAvailabilityService.js';
 
-function enrichProduct(product) {
+const API_URL = 'http://localhost:3000/api/products';
+
+/**
+ * Converte o formato vindo do PostgreSQL
+ * para o formato usado pelo frontend.
+ */
+function normalizeProduct(product) {
   if (!product) return product;
 
-  const supplier = getSupplierById(product.supplierId) || getSupplierByName(product.seller);
-  // Enriquecer com status de disponibilidade local (localStorage)
-  const available = product.available !== false && isProductAvailable(product.id);
-  
   return {
     ...product,
-    available,
-    supplierId: product.supplierId || supplier?.id || null,
-    supplierName: supplier?.name || product.seller || 'Fornecedora',
+
+    // PostgreSQL -> frontend
+    createdAt: product.createdAt || product.created_at || null,
+
+    categoryName:
+      product.categoryName ||
+      product.category_name ||
+      null,
+
+    originalPrice:
+      product.originalPrice ??
+      product.original_price ??
+      null,
+
+    conditionLabel:
+      product.conditionLabel ||
+      product.condition_label ||
+      null,
+
+    supplierId:
+      product.supplierId ||
+      product.supplier_id ||
+      null,
+
+    supplierName:
+      product.supplierName ||
+      product.supplier_name ||
+      null,
+
+    createdBy:
+      product.createdBy ||
+      product.created_by ||
+      null,
+
+    // Mantém photo/image compatíveis
+    photo: product.photo || null,
+    image: product.image || null,
   };
 }
 
-// ─── Leitura básica ─────────────────────────────────────────────────────────
-export function getAllProducts() {
-  return products.map(enrichProduct);
+/**
+ * Enriquece produto com informações de fornecedor
+ * e disponibilidade.
+ */
+function enrichProduct(rawProduct) {
+  if (!rawProduct) return rawProduct;
+
+  const product = normalizeProduct(rawProduct);
+
+  const supplier =
+    getSupplierById(product.supplierId) ||
+    getSupplierByName(product.seller);
+
+  let available;
+
+  /*
+   * Produtos vindos do banco usam o campo status.
+   * Produtos antigos continuam usando o localStorage.
+   */
+  if (product.status) {
+    available = product.status === 'disponivel';
+  } else {
+    available =
+      product.available !== false &&
+      isProductAvailable(product.id);
+  }
+
+  return {
+    ...product,
+
+    available,
+
+    supplierId:
+      product.supplierId ||
+      supplier?.id ||
+      null,
+
+    supplierName:
+      product.supplierName ||
+      supplier?.name ||
+      product.seller ||
+      'Fornecedora',
+  };
 }
 
-export function getAvailableProducts() {
-  return getAllProducts().filter((p) => p.available !== false);
+// ─────────────────────────────────────────────────────────────────────────────
+// LEITURA BÁSICA
+// ─────────────────────────────────────────────────────────────────────────────
+
+export async function getAllProducts() {
+  try {
+    const response = await fetch(API_URL);
+
+    if (!response.ok) {
+      throw new Error('Erro ao buscar produtos da API.');
+    }
+
+    const data = await response.json();
+
+    if (!Array.isArray(data)) {
+      throw new Error('A API não retornou uma lista de produtos.');
+    }
+
+    return data.map(enrichProduct);
+  } catch (error) {
+    console.error(
+      'Erro ao carregar produtos do banco:',
+      error
+    );
+
+    return [];
+  }
 }
 
-export function getProductById(id) {
-  return getAllProducts().find((p) => p.id === Number(id));
+export async function getAvailableProducts() {
+  const products = await getAllProducts();
+
+  return products.filter(
+    (product) => product.available !== false
+  );
 }
 
-// ─── Listagens temáticas ────────────────────────────────────────────────────
-export function getNewestProducts(limit = 8) {
-  return getAvailableProducts()
+export async function getProductById(id) {
+  const products = await getAllProducts();
+
+  return products.find(
+    (product) => product.id === Number(id)
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LISTAGENS TEMÁTICAS
+// ─────────────────────────────────────────────────────────────────────────────
+
+export async function getNewestProducts(limit = 8) {
+  const products = await getAvailableProducts();
+
+  return products
     .slice()
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt || 0) -
+        new Date(a.createdAt || 0)
+    )
     .slice(0, limit);
 }
 
-export function getFeaturedProducts(limit = 4) {
-  return getAvailableProducts()
+export async function getFeaturedProducts(limit = 4) {
+  const products = await getAvailableProducts();
+
+  return products
     .slice()
     .sort((a, b) => {
-      const discA = a.originalPrice > a.price ? ((a.originalPrice - a.price) / a.originalPrice) : 0;
-      const discB = b.originalPrice > b.price ? ((b.originalPrice - b.price) / b.originalPrice) : 0;
+      const priceA = Number(a.price) || 0;
+      const priceB = Number(b.price) || 0;
+
+      const originalA =
+        Number(a.originalPrice) || 0;
+
+      const originalB =
+        Number(b.originalPrice) || 0;
+
+      const discA =
+        originalA > priceA
+          ? (originalA - priceA) / originalA
+          : 0;
+
+      const discB =
+        originalB > priceB
+          ? (originalB - priceB) / originalB
+          : 0;
+
       return discB - discA;
     })
     .slice(0, limit);
 }
 
-export function getRelatedByCategory(product, limit = 4) {
+export async function getRelatedByCategory(
+  product,
+  limit = 4
+) {
   if (!product) return [];
 
-  return getAvailableProducts()
-    .filter((p) => p.category === product.category && p.id !== product.id)
+  const products = await getAvailableProducts();
+
+  return products
+    .filter(
+      (item) =>
+        item.category === product.category &&
+        item.id !== product.id
+    )
     .slice(0, limit);
 }
 
-export function getRelatedBySupplier(product, limit = 4) {
+export async function getRelatedBySupplier(
+  product,
+  limit = 4
+) {
   if (!product) return [];
 
-  const supplierId = product.supplierId || getSupplierByName(product.seller)?.id;
+  const products = await getAvailableProducts();
 
-  return getAvailableProducts()
-    .filter((p) => {
-      const productSupplierId = p.supplierId || getSupplierByName(p.seller)?.id;
-      return productSupplierId && supplierId && productSupplierId === supplierId && p.id !== product.id;
+  const supplierId =
+    product.supplierId ||
+    getSupplierByName(product.seller)?.id;
+
+  return products
+    .filter((item) => {
+      const itemSupplierId =
+        item.supplierId ||
+        getSupplierByName(item.seller)?.id;
+
+      return (
+        itemSupplierId &&
+        supplierId &&
+        itemSupplierId === supplierId &&
+        item.id !== product.id
+      );
     })
     .slice(0, limit);
 }
 
-// ─── Busca e filtragem ───────────────────────────────────────────────────────
-export function filterProducts(query = '', filters = {}, sort = 'relevancia') {
-  const onlyAvailable = filters.onlyAvailable !== false;
-  let list = onlyAvailable ? getAvailableProducts() : getAllProducts();
+// ─────────────────────────────────────────────────────────────────────────────
+// BUSCA E FILTRAGEM
+// ─────────────────────────────────────────────────────────────────────────────
 
-  if (query.trim()) {
+export async function filterProducts(
+  query = '',
+  filters = {},
+  sort = 'relevancia'
+) {
+  const onlyAvailable =
+    filters.onlyAvailable !== false;
+
+  let list = onlyAvailable
+    ? await getAvailableProducts()
+    : await getAllProducts();
+
   const normalize = (text) =>
     String(text || '')
       .toLowerCase()
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '');
 
-  const words = normalize(query.trim())
-    .split(/\s+/)
-    .filter(Boolean);
+  // Busca
+  if (query.trim()) {
+    const words = normalize(query.trim())
+      .split(/\s+/)
+      .filter(Boolean);
 
-  list = list.filter((p) => {
-    const searchableText = normalize(p.name);
+    list = list.filter((product) => {
+      const searchableText = normalize(
+        [
+          product.name,
+          product.brand,
+          product.description,
+          product.category,
+          product.categoryName,
+          product.supplierName,
+        ]
+          .filter(Boolean)
+          .join(' ')
+      );
 
-    return words.every((word) =>
-      searchableText.includes(word)
-    );
-  });
-}
+      return words.every((word) =>
+        searchableText.includes(word)
+      );
+    });
+  }
 
+  // Categorias
   if (filters.categories?.length) {
-    list = list.filter((p) => filters.categories.includes(p.category));
+    list = list.filter((product) =>
+      filters.categories.includes(
+        product.category
+      )
+    );
   }
 
+  // Tamanhos
   if (filters.sizes?.length) {
-    list = list.filter((p) => filters.sizes.includes(p.size));
+    list = list.filter((product) =>
+      filters.sizes.includes(product.size)
+    );
   }
 
+  // Conservação
   if (filters.conditions?.length) {
-    list = list.filter((p) => filters.conditions.includes(p.condition));
+    list = list.filter((product) =>
+      filters.conditions.includes(
+        product.condition
+      )
+    );
   }
 
-  if (filters.minPrice !== '' && filters.minPrice !== undefined) {
-    list = list.filter((p) => p.price >= Number(filters.minPrice));
+  // Preço mínimo
+  if (
+    filters.minPrice !== '' &&
+    filters.minPrice !== undefined
+  ) {
+    list = list.filter(
+      (product) =>
+        Number(product.price) >=
+        Number(filters.minPrice)
+    );
   }
 
-  if (filters.maxPrice !== '' && filters.maxPrice !== undefined) {
-    list = list.filter((p) => p.price <= Number(filters.maxPrice));
+  // Preço máximo
+  if (
+    filters.maxPrice !== '' &&
+    filters.maxPrice !== undefined
+  ) {
+    list = list.filter(
+      (product) =>
+        Number(product.price) <=
+        Number(filters.maxPrice)
+    );
   }
 
   const sorted = [...list];
+
   switch (sort) {
     case 'menor-preco':
-      sorted.sort((a, b) => a.price - b.price);
+      sorted.sort(
+        (a, b) =>
+          Number(a.price) -
+          Number(b.price)
+      );
       break;
+
     case 'maior-preco':
-      sorted.sort((a, b) => b.price - a.price);
+      sorted.sort(
+        (a, b) =>
+          Number(b.price) -
+          Number(a.price)
+      );
       break;
+
     case 'mais-recentes':
-      sorted.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      sorted.sort(
+        (a, b) =>
+          new Date(b.createdAt || 0) -
+          new Date(a.createdAt || 0)
+      );
       break;
+
     default:
       break;
   }
@@ -141,17 +372,60 @@ export function filterProducts(query = '', filters = {}, sort = 'relevancia') {
   return sorted;
 }
 
-export function quickSearch(query, limit = 6) {
-  if (!query || query.trim().length < 2) return [];
-  return filterProducts(query, {}, 'relevancia').slice(0, limit);
+export async function quickSearch(
+  query,
+  limit = 6
+) {
+  if (
+    !query ||
+    query.trim().length < 2
+  ) {
+    return [];
+  }
+
+  const products = await filterProducts(
+    query,
+    {},
+    'relevancia'
+  );
+
+  return products.slice(0, limit);
 }
 
-// ─── Metadados ───────────────────────────────────────────────────────────────
-export function getSellers() {
-  return [...new Set(getAllProducts().map((p) => p.supplierName || p.seller))].sort();
+// ─────────────────────────────────────────────────────────────────────────────
+// METADADOS
+// ─────────────────────────────────────────────────────────────────────────────
+
+export async function getSellers() {
+  const products = await getAllProducts();
+
+  return [
+    ...new Set(
+      products.map(
+        (product) =>
+          product.supplierName ||
+          product.seller
+      )
+    ),
+  ].sort();
 }
 
-export function getPriceRange() {
-  const prices = getAllProducts().map((p) => p.price);
-  return { min: Math.min(...prices), max: Math.max(...prices) };
+export async function getPriceRange() {
+  const products = await getAllProducts();
+
+  const prices = products
+    .map((product) => Number(product.price))
+    .filter((price) => !Number.isNaN(price));
+
+  if (prices.length === 0) {
+    return {
+      min: 0,
+      max: 0,
+    };
+  }
+
+  return {
+    min: Math.min(...prices),
+    max: Math.max(...prices),
+  };
 }

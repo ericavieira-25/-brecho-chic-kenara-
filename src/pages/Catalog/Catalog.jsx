@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getAvailableProducts } from '../../data/productService.js';
+import { getAllProducts } from '../../data/productService.js';
 import { formatPrice } from '../../utils/formatters';
 import Button from '../../components/ui/Button/Button';
 import styles from './Catalog.module.css';
@@ -12,17 +12,50 @@ export default function Catalog() {
   const [condition, setCondition] = useState('');
   const [sort, setSort] = useState('recent');
 
-  const filteredProducts = useMemo(() => {
-    let result = getAvailableProducts().filter((product) => {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadProducts() {
+      try {
+        setLoading(true);
+
+        const result = await getAllProducts();
+        console.log('PRODUTOS RECEBIDOS NO CATÁLOGO:', result);
+
+        setProducts(Array.isArray(result) ? result : []);
+      } catch (error) {
+        console.error('Erro ao carregar catálogo:', error);
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadProducts();
+  }, []);
+
+  const filteredProducts = products
+    .filter((product) => {
       const searchText = search.trim().toLowerCase();
+
+      const productName = String(product.name || '').toLowerCase();
+      const productBrand = String(product.brand || '').toLowerCase();
+      const productDescription = String(
+        product.description || ''
+      ).toLowerCase();
+
+      const productTags = Array.isArray(product.tags)
+        ? product.tags
+        : [];
 
       const matchesSearch =
         !searchText ||
-        product.name.toLowerCase().includes(searchText) ||
-        product.brand.toLowerCase().includes(searchText) ||
-        product.description.toLowerCase().includes(searchText) ||
-        product.tags.some((tag) =>
-          tag.toLowerCase().includes(searchText)
+        productName.includes(searchText) ||
+        productBrand.includes(searchText) ||
+        productDescription.includes(searchText) ||
+        productTags.some((tag) =>
+          String(tag).toLowerCase().includes(searchText)
         );
 
       const matchesCategory =
@@ -40,35 +73,48 @@ export default function Catalog() {
         matchesSize &&
         matchesCondition
       );
-    });
+    })
+    .sort((a, b) => {
+      const priceA = Number(a.price) || 0;
+      const priceB = Number(b.price) || 0;
 
-    result = [...result].sort((a, b) => {
+      const originalPriceA =
+        Number(a.originalPrice) || 0;
+
+      const originalPriceB =
+        Number(b.originalPrice) || 0;
+
       if (sort === 'priceAsc') {
-        return a.price - b.price;
+        return priceA - priceB;
       }
 
       if (sort === 'priceDesc') {
-        return b.price - a.price;
+        return priceB - priceA;
       }
 
       if (sort === 'discount') {
         const discountA =
-          ((a.originalPrice - a.price) / a.originalPrice) * 100;
+          originalPriceA > priceA
+            ? ((originalPriceA - priceA) /
+                originalPriceA) *
+              100
+            : 0;
 
         const discountB =
-          ((b.originalPrice - b.price) / b.originalPrice) * 100;
+          originalPriceB > priceB
+            ? ((originalPriceB - priceB) /
+                originalPriceB) *
+              100
+            : 0;
 
         return discountB - discountA;
       }
 
       return (
-        new Date(b.createdAt) -
-        new Date(a.createdAt)
+        new Date(b.createdAt || 0) -
+        new Date(a.createdAt || 0)
       );
     });
-
-    return result;
-  }, [search, category, size, condition, sort]);
 
   function clearFilters() {
     setSearch('');
@@ -85,7 +131,7 @@ export default function Catalog() {
       regular: 'Estado regular',
     };
 
-    return labels[value] || value;
+    return labels[value] || value || 'Não informado';
   }
 
   function getCategoryLabel(value) {
@@ -98,7 +144,48 @@ export default function Catalog() {
       acessorios: 'Acessórios',
     };
 
-    return labels[value] || value;
+    return labels[value] || value || 'Sem categoria';
+  }
+
+  function getProductImage(product) {
+    if (
+      Array.isArray(product.images) &&
+      product.images.length > 0
+    ) {
+      return product.images[0];
+    }
+
+    if (product.photo) {
+      return product.photo;
+    }
+
+    if (product.image) {
+      return product.image;
+    }
+
+    return '/placeholder-product.jpg';
+  }
+
+  if (loading) {
+    return (
+      <main className={styles.page}>
+        <div className={styles.container}>
+          <section className={styles.empty}>
+            <div className={styles.emptyIcon}>
+              🛍️
+            </div>
+
+            <h2>
+              Carregando produtos...
+            </h2>
+
+            <p>
+              Buscando as peças disponíveis.
+            </p>
+          </section>
+        </div>
+      </main>
+    );
   }
 
   return (
@@ -316,18 +403,25 @@ export default function Catalog() {
         ) : (
           <section className={styles.grid}>
             {filteredProducts.map((product) => {
+              const price =
+                Number(product.price) || 0;
+
+              const originalPrice =
+                Number(product.originalPrice) || 0;
+
               const hasDiscount =
-                product.originalPrice >
-                product.price;
+                originalPrice > price;
 
               const discount = hasDiscount
                 ? Math.round(
-                    ((product.originalPrice -
-                      product.price) /
-                      product.originalPrice) *
+                    ((originalPrice - price) /
+                      originalPrice) *
                       100
                   )
                 : 0;
+
+              const image =
+                getProductImage(product);
 
               return (
                 <article
@@ -338,21 +432,33 @@ export default function Catalog() {
                     to={`/produto/${product.id}`}
                     className={styles.imageLink}
                   >
-                    <div className={styles.imageWrapper}>
+                    <div
+                      className={
+                        styles.imageWrapper
+                      }
+                    >
                       <img
-                        src={product.images[0]}
+                        src={image}
                         alt={product.name}
                         className={styles.image}
                         loading="lazy"
                       />
 
                       {hasDiscount && (
-                        <span className={styles.discount}>
+                        <span
+                          className={
+                            styles.discount
+                          }
+                        >
                           -{discount}%
                         </span>
                       )}
 
-                      <span className={styles.condition}>
+                      <span
+                        className={
+                          styles.condition
+                        }
+                      >
                         {getConditionLabel(
                           product.condition
                         )}
@@ -360,15 +466,26 @@ export default function Catalog() {
                     </div>
                   </Link>
 
-                  <div className={styles.productInfo}>
-
-                    <span className={styles.category}>
+                  <div
+                    className={
+                      styles.productInfo
+                    }
+                  >
+                    <span
+                      className={
+                        styles.category
+                      }
+                    >
                       {getCategoryLabel(
                         product.category
                       )}
                     </span>
 
-                    <h2 className={styles.productName}>
+                    <h2
+                      className={
+                        styles.productName
+                      }
+                    >
                       <Link
                         to={`/produto/${product.id}`}
                       >
@@ -376,32 +493,53 @@ export default function Catalog() {
                       </Link>
                     </h2>
 
-                    <p className={styles.brand}>
-                      {product.brand}
+                    <p
+                      className={
+                        styles.brand
+                      }
+                    >
+                      {product.brand ||
+                        'Marca não informada'}
                     </p>
 
-                    <div className={styles.meta}>
+                    <div
+                      className={styles.meta}
+                    >
                       <span>
-                        Tamanho {product.size}
+                        Tamanho{' '}
+                        {product.size ||
+                          'Único'}
                       </span>
 
-                      <span>
-                        {product.location}
-                      </span>
+                      {product.location && (
+                        <span>
+                          {product.location}
+                        </span>
+                      )}
                     </div>
 
-                    <div className={styles.priceArea}>
+                    <div
+                      className={
+                        styles.priceArea
+                      }
+                    >
                       <div>
-                        <strong className={styles.price}>
-                          {formatPrice(product.price)}
+                        <strong
+                          className={
+                            styles.price
+                          }
+                        >
+                          {formatPrice(price)}
                         </strong>
 
                         {hasDiscount && (
                           <span
-                            className={styles.originalPrice}
+                            className={
+                              styles.originalPrice
+                            }
                           >
                             {formatPrice(
-                              product.originalPrice
+                              originalPrice
                             )}
                           </span>
                         )}
@@ -418,14 +556,12 @@ export default function Catalog() {
                         </Button>
                       </Link>
                     </div>
-
                   </div>
                 </article>
               );
             })}
           </section>
         )}
-
       </div>
     </main>
   );
