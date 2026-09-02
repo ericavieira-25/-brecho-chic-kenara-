@@ -1,9 +1,10 @@
 import { Navigate, Link } from 'react-router-dom';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { mockOrders } from '../../data/orders.js';
 import {
   getOrdersByCustomerId,
+  fetchOrdersByCustomerId,
   normalizeOrder,
 } from '../../data/orderService.js';
 import {
@@ -26,18 +27,32 @@ const statusVariant = {
 export default function Orders() {
   const { user } = useAuth();
   const userId = user?.id;
+  const [realOrders, setRealOrders] = useState(() => (
+    userId ? getOrdersByCustomerId(userId) : []
+  ));
+
+  useEffect(() => {
+    let active = true;
+    if (userId) {
+      fetchOrdersByCustomerId(userId).then((orders) => {
+        if (active) setRealOrders(orders);
+      });
+    }
+    return () => {
+      active = false;
+    };
+  }, [userId]);
 
   const allOrders = useMemo(() => {
-    const realOrders = userId ? getOrdersByCustomerId(userId) : [];
-
     const demoOrders = mockOrders
       .slice(0, 2)
       .map(normalizeOrder);
 
-    return [...demoOrders, ...realOrders]
+    const userOrders = realOrders.filter((order) => order.customerId === userId);
+    return [...demoOrders, ...userOrders]
       .map(normalizeOrder)
       .sort((a, b) => new Date(b.date) - new Date(a.date));
-  }, [userId]);
+  }, [realOrders, userId]);
 
   if (!user) {
     return <Navigate to="/login?redirect=/pedidos" replace />;

@@ -34,7 +34,7 @@ export default function Cart() {
 
   try {
     // Criar pedido com status de aguardando pagamento
-    const order = createOrder({
+    const order = await createOrder({
       user,
       cartItems: items,
       subtotal,
@@ -154,4 +154,3 @@ export default function Cart() {
     </div>
   );
 }
-

@@ -31,7 +31,7 @@ export default function Register() {
     setFieldErrors({});
     setLoading(true);
     await new Promise((r) => setTimeout(r, 600));
-    const ok = register(form.name, form.email, form.password);
+    const ok = await register(form.name, form.email, form.password);
     setLoading(false);
     if (ok) navigate('/');
   }

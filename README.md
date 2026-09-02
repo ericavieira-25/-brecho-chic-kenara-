@@ -116,8 +116,11 @@ src/
 
 ## 🔒 Autenticação e Autorização
 
-O app utiliza:
-- **PostgreSQL** para produtos e **localStorage** apenas para sessão/carrinho local
+- **PostgreSQL** para usuários, produtos e pedidos; os endpoints Vercel criam as
+ tabelas automaticamente na primeira requisição
+- **crypto.scrypt** para armazenar senhas sem texto puro
+- **localStorage** como cache e fallback das contas demo quando a API/banco não
+ estiver disponível
 - **Context API** para estado global (usuário, carrinho, favoritos)
 - **ProtectedRoute** para proteção de rotas baseada em papel
 
@@ -192,7 +195,7 @@ export default function MyPage() {
 ## 🚀 Próximos Passos (Roadmap)
 
 - [x] Backend real com API e PostgreSQL para produtos
-- [ ] Autenticação completa no backend para usuários e pedidos
+- [x] Autenticação e persistência de usuários e pedidos no backend
 - [ ] Integração com gateway de pagamento real (Stripe, MercadoPago)
 - [ ] Envio de e-mails de confirmação
 - [ ] Notificações em tempo real
