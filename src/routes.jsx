@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
-import Payment from './pages/Payment/Payment';
+import Payment from "./pages/Payment/Payment.jsx";
 import PixPayment from './pages/PixPayment/PixPayment';
 
 import Layout from './components/layout/Layout/Layout';
