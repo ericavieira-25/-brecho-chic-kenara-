@@ -1,11 +1,5 @@
-import { Pool } from 'pg';
-
 import crypto from 'node:crypto';
-import { ensureProductsTable } from './_db.js';
-
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
+import { ensureProductsTable, getPool } from './_db.js';
 
 function requireAdmin(req, res) {
   const cookies = Object.fromEntries((req.headers.cookie || '').split(';').filter(Boolean).map((cookie) => {
@@ -73,7 +67,7 @@ export default async function handler(req, res) {
 
     // GET /api/products
     if (req.method === 'GET') {
-      const result = await pool.query(
+      const result = await getPool().query(
         'SELECT * FROM products ORDER BY id DESC'
       );
 
@@ -105,7 +99,7 @@ export default async function handler(req, res) {
       const validationError = validateProduct(req.body);
       if (validationError) return res.status(400).json({ erro: validationError });
 
-      const result = await pool.query(
+      const result = await getPool().query(
         `INSERT INTO products
         (
           name,
@@ -163,7 +157,7 @@ export default async function handler(req, res) {
       if (!Number.isInteger(id)) {
         return res.status(400).json({ erro: 'ID de produto inválido.' });
       }
-      const result = await pool.query('DELETE FROM products WHERE id = $1 RETURNING id', [id]);
+      const result = await getPool().query('DELETE FROM products WHERE id = $1 RETURNING id', [id]);
       if (result.rowCount === 0) return res.status(404).json({ erro: 'Produto não encontrado.' });
       return res.status(204).end();
     }
