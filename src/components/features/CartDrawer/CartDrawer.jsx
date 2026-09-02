@@ -45,7 +45,7 @@ export default function CartDrawer({ isOpen, onClose }) {
               {items.map((item) => (
                 <li key={item.id} className={styles.item}>
                   <Link to={`/produto/${item.id}`} onClick={onClose}>
-                    <img src={item.images[0]} alt={item.name} className={styles.thumb} />
+                    <img src={(item.images?.[0] || item.photo || item.image || "/placeholder-product.jpg")} alt={item.name} className={styles.thumb} />
                   </Link>
                   <div className={styles.itemInfo}>
                     <p className={styles.itemName}>{item.name}</p>
@@ -89,3 +89,4 @@ export default function CartDrawer({ isOpen, onClose }) {
     </>
   );
 }
+

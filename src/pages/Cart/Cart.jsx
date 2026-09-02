@@ -99,7 +99,7 @@ export default function Cart() {
               {items.map((item) => (
                 <div key={item.id} className={styles.item}>
                   <Link to={`/produto/${item.id}`}>
-                    <img src={item.images[0]} alt={item.name} className={styles.thumb} />
+                    <img src={(item.images?.[0] || item.photo || item.image || "/placeholder-product.jpg")} alt={item.name} className={styles.thumb} />
                   </Link>
                   <div className={styles.itemInfo}>
                     <Link to={`/produto/${item.id}`}><h3 className={styles.itemName}>{item.name}</h3></Link>
@@ -154,3 +154,4 @@ export default function Cart() {
     </div>
   );
 }
+

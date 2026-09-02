@@ -56,7 +56,7 @@ export default function SearchBar({ onClose }) {
             {results.map((p) => (
               <li key={p.id}>
                 <button className={styles.resultItem} onClick={() => handleSelect(p.id)}>
-                  <img src={p.images[0]} alt={p.name} className={styles.thumb} />
+                  <img src={(p.images?.[0] || p.photo || p.image || "/placeholder-product.jpg")} alt={p.name} className={styles.thumb} />
                   <div className={styles.resultInfo}>
                     <span className={styles.resultName}>{p.name}</span>
                     <span className={styles.resultMeta}>{p.brand} · {p.size}</span>
@@ -78,3 +78,5 @@ export default function SearchBar({ onClose }) {
     </div>
   );
 }
+
+

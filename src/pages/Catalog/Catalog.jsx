@@ -152,7 +152,7 @@ export default function Catalog() {
       Array.isArray(product.images) &&
       product.images.length > 0
     ) {
-      return product.images[0];
+      return (product.images?.[0] || product.photo || product.image || "/placeholder-product.jpg");
     }
 
     if (product.photo) {
