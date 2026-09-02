@@ -1,8 +1,70 @@
 import { Pool } from 'pg';
 
+import crypto from 'node:crypto';
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
+
+function requireAdmin(req, res) {
+  const cookies = Object.fromEntries((req.headers.cookie || '').split(';').filter(Boolean).map((cookie) => {
+    const separator = cookie.indexOf('=');
+    return [cookie.slice(0, separator).trim(), cookie.slice(separator + 1).trim()];
+  }));
+  const [payload, signature] = (cookies.kenara_admin_session || '').split('.');
+  const expectedSignature = payload && process.env.AUTH_SECRET
+    ? crypto.createHmac('sha256', process.env.AUTH_SECRET).update(payload).digest('base64url')
+    : '';
+  let claims;
+  try {
+    claims = payload ? JSON.parse(Buffer.from(payload, 'base64url').toString()) : null;
+  } catch {
+    claims = null;
+  }
+  const signaturesMatch = signature && expectedSignature &&
+    signature.length === expectedSignature.length &&
+    crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature));
+  if (
+    !payload ||
+    !signature ||
+    !expectedSignature ||
+    !signaturesMatch ||
+    claims?.role !== 'administradora' ||
+    claims.exp <= Math.floor(Date.now() / 1000)
+  ) {
+    res.status(401).json({ erro: 'Acesso administrativo não autorizado.' });
+    return false;
+  }
+  return true;
+}
+
+function requireCsrf(req, res) {
+  const cookies = Object.fromEntries((req.headers.cookie || '').split(';').filter(Boolean).map((cookie) => {
+    const separator = cookie.indexOf('=');
+    return [cookie.slice(0, separator).trim(), cookie.slice(separator + 1).trim()];
+  }));
+  const headerToken = req.headers['x-csrf-token'];
+  const cookieToken = cookies.kenara_csrf;
+  const valid = typeof headerToken === 'string' &&
+    typeof cookieToken === 'string' &&
+    headerToken.length === cookieToken.length &&
+    crypto.timingSafeEqual(Buffer.from(headerToken), Buffer.from(cookieToken));
+  if (!valid) {
+    res.status(403).json({ erro: 'Token CSRF inválido ou ausente.' });
+    return false;
+  }
+  return true;
+}
+
+function validateProduct(body) {
+  if (!body || !String(body.name || '').trim()) {
+    return 'Nome é obrigatório.';
+  }
+  if (!Number.isFinite(Number(body.price)) || Number(body.price) < 0) {
+    return 'Preço deve ser um número maior ou igual a zero.';
+  }
+  return null;
+}
 
 export default async function handler(req, res) {
   try {
@@ -17,6 +79,8 @@ export default async function handler(req, res) {
 
     // POST /api/products
     if (req.method === 'POST') {
+      if (!requireAdmin(req, res)) return;
+      if (!requireCsrf(req, res)) return;
       const {
         name,
         category,
@@ -34,6 +98,9 @@ export default async function handler(req, res) {
         createdBy,
         status,
       } = req.body;
+
+      const validationError = validateProduct(req.body);
+      if (validationError) return res.status(400).json({ erro: validationError });
 
       const result = await pool.query(
         `INSERT INTO products
@@ -85,6 +152,19 @@ export default async function handler(req, res) {
       });
     }
 
+    // DELETE /api/products/:id
+    if (req.method === 'DELETE') {
+      if (!requireAdmin(req, res)) return;
+      if (!requireCsrf(req, res)) return;
+      const id = Number(req.query.id);
+      if (!Number.isInteger(id)) {
+        return res.status(400).json({ erro: 'ID de produto inválido.' });
+      }
+      const result = await pool.query('DELETE FROM products WHERE id = $1 RETURNING id', [id]);
+      if (result.rowCount === 0) return res.status(404).json({ erro: 'Produto não encontrado.' });
+      return res.status(204).end();
+    }
+
     return res.status(405).json({
       erro: 'Método não permitido.',
     });
@@ -92,7 +172,7 @@ export default async function handler(req, res) {
     console.error('Erro na API:', error);
 
     return res.status(500).json({
-      erro: error.message,
+      erro: 'Erro interno ao processar a solicitação.',
     });
   }
 }

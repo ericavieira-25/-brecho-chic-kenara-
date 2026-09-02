@@ -1,7 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Navigate, Link } from 'react-router-dom';
-import { useGuard } from '../../hooks/useGuard.js';
-import { USER_ROLES } from '../../data/roles.js';
+import { Link } from 'react-router-dom';
 import { mockOrders } from '../../data/orders.js';
 import { mergeOrdersWithMock } from '../../data/orderService.js';
 import {
@@ -29,18 +27,31 @@ function formatDate(date) {
 }
 
 export default function SupplierPayments() {
-  const { isAuth, hasRole } = useGuard();
   const [, setRefresh] = useState(0);
 
-  if (!isAuth) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (!hasRole(USER_ROLES.ADMIN)) {
-    return <Navigate to="/" replace />;
-  }
-
   const payments = useMemo(() => {
+    const orders = mergeOrdersWithMock(mockOrders);
+    const result = [];
+    orders.forEach((order) => {
+      if (!order.items) return;
+      const suppliers = {};
+      order.items.forEach((item) => {
+        const supplierId = item.supplierId || item.fornecedoraId || 'supplier-unknown';
+        const supplierName = item.supplierName || item.fornecedoraName || 'Fornecedora não identificada';
+        const amount = Number(item.price || 0) * Number(item.quantity || item.qty || 1);
+        if (!suppliers[supplierId]) suppliers[supplierId] = { supplierId, supplierName, amount: 0 };
+        suppliers[supplierId].amount += amount;
+      });
+      Object.values(suppliers).forEach((supplier) => {
+        const payment = getSupplierPayment(order.id, supplier.supplierId);
+        result.push({ ...supplier, orderId: order.id, supplierShare: calculateSupplierShare(supplier.amount), status: payment.status });
+      });
+    });
+    return result;
+  }, []);
+
+  /* payments are derived before the authorization branches above */
+  /*
     const orders = mergeOrdersWithMock(mockOrders);
 
     const result = [];
@@ -104,7 +115,7 @@ export default function SupplierPayments() {
         new Date(b.orderDate) -
         new Date(a.orderDate)
     );
-  }, [setRefresh]);
+  }, [setRefresh]); */
 
   const totalToPay = roundCurrency(
     payments

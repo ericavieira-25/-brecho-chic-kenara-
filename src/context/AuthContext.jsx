@@ -45,10 +45,32 @@ export function AuthProvider({ children }) {
 
   const logout = useCallback(() => {
     setUser(null);
+    fetch('/api/auth', { method: 'DELETE', credentials: 'include' });
+  }, [setUser]);
+
+  const adminLogin = useCallback(async (email, password) => {
+    setError('');
+    const response = await fetch('/api/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      setError(data.erro || 'Não foi possível entrar.');
+      return false;
+    }
+    const matchedUser = demoUsers.find((candidate) => candidate.email === email);
+    if (matchedUser) {
+      const { password: _password, ...safeUser } = matchedUser;
+      setUser(safeUser);
+    }
+    return true;
   }, [setUser]);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, register, error, setError }}>
+    <AuthContext.Provider value={{ user, login, adminLogin, logout, register, error, setError }}>
       {children}
     </AuthContext.Provider>
   );

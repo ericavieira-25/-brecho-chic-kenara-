@@ -1,23 +1,27 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { getProducts, deleteProduct } from '../../services/productService';
+import { getAllProducts, deleteProduct } from '../../data/productService.js';
 
 import styles from './AdminProducts.module.css';
 
 export default function AdminProducts() {
   const [products, setProducts] = useState([]);
 
-  function loadProducts() {
-    const savedProducts = getProducts();
-    setProducts(savedProducts);
+  async function loadProducts() {
+    try {
+      setProducts(await getAllProducts());
+    } catch (error) {
+      console.error('Erro ao carregar produtos:', error);
+      setProducts([]);
+    }
   }
 
   useEffect(() => {
     loadProducts();
   }, []);
 
-  function handleDelete(productId) {
+  async function handleDelete(productId) {
     const confirmed = window.confirm(
       'Tem certeza que deseja excluir esta peça?'
     );
@@ -26,8 +30,13 @@ export default function AdminProducts() {
       return;
     }
 
-    const updatedProducts = deleteProduct(productId);
-    setProducts(updatedProducts);
+    try {
+      await deleteProduct(productId);
+      await loadProducts();
+    } catch (error) {
+      console.error('Erro ao excluir produto:', error);
+      window.alert('Não foi possível excluir a peça.');
+    }
   }
 
   return (

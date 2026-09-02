@@ -48,6 +48,11 @@ Use essas para testar todas as funcionalidades:
 - E-mail: `admin@brecho.com`
 - Senha: `123456`
 
+Configure `ADMIN_EMAIL`, `ADMIN_PASSWORD` e `AUTH_SECRET` nas variáveis de
+ambiente da Vercel. O frontend autentica no endpoint `/api/auth` e usa um
+cookie `HttpOnly` com token assinado e expiração para operações administrativas.
+As alterações administrativas também exigem um token CSRF de uso duplo.
+
 ---
 
 ## 💾 O que está Salvo
@@ -65,8 +70,8 @@ Use essas para testar todas as funcionalidades:
 
 ## 📦 O que NÃO está Salvo (Por enquanto)
 
-❌ Backend real (usando localStorage apenas)  
-❌ Banco de dados (dados em localStorage)  
+✅ API de produtos com PostgreSQL
+✅ Cadastro e exclusão administrativa protegidos por sessão `HttpOnly`
 ❌ Pagamento real (simulado com PIX)  
 ❌ Upload de imagens real (usando URLs de exemplo)  
 
@@ -95,7 +100,7 @@ R: Sim! É só fazer push para GitHub e importar em outro hosting.
 R: Login com admin → Home → "Adicionar Produto"
 
 **P: Os dados vão perder se reiniciar?**  
-R: Sim, está usando localStorage. Para persistir, precisa de backend com banco de dados.
+R: Produtos são persistidos no PostgreSQL. Carrinho, sessão e pedidos de demonstração ainda usam localStorage.
 
 **P: Quantas pessoas podem usar ao mesmo tempo?**  
 R: Ilimitadas se for frontend puro no navegador. Sem servidor backend.

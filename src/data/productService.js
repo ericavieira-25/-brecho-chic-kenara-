@@ -9,6 +9,30 @@ import { getSupplierById, getSupplierByName } from './suppliers.js';
 import { isProductAvailable } from './productAvailabilityService.js';
 
 const API_URL = '/api/products';
+async function request(url, options = {}) {
+  const csrfCookie = document.cookie
+    .split('; ')
+    .find((cookie) => cookie.startsWith('kenara_csrf='));
+  const csrfToken = csrfCookie?.split('=').slice(1).join('=');
+  const response = await fetch(url, {
+    ...options,
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(csrfToken && options.method && options.method !== 'GET'
+        ? { 'X-CSRF-Token': csrfToken }
+        : {}),
+      ...options.headers,
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.erro || 'Erro ao acessar a API de produtos.');
+  }
+
+  return response.json();
+}
 
 function normalizeProduct(product) {
   if (!product) return product;
@@ -91,13 +115,7 @@ function enrichProduct(rawProduct) {
 
 export async function getAllProducts() {
   try {
-    const response = await fetch(API_URL);
-
-    if (!response.ok) {
-      throw new Error('Erro ao buscar produtos da API.');
-    }
-
-    const data = await response.json();
+    const data = await request(API_URL);
 
     if (!Array.isArray(data)) {
       throw new Error('A API não retornou uma lista de produtos.');
@@ -112,6 +130,21 @@ export async function getAllProducts() {
 
     return [];
   }
+
+}
+
+export async function addProduct(product) {
+  const data = await request(API_URL, {
+    method: 'POST',
+    body: JSON.stringify(product),
+  });
+  return enrichProduct(data.produto);
+}
+
+export async function deleteProduct(productId) {
+  await request(`${API_URL}?id=${encodeURIComponent(productId)}`, {
+    method: 'DELETE',
+  });
 }
 
 export async function getAvailableProducts() {
