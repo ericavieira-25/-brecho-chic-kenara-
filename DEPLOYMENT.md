@@ -49,9 +49,15 @@ Use essas para testar todas as funcionalidades:
 - Senha: `123456`
 
 Configure `ADMIN_EMAIL`, `ADMIN_PASSWORD` e `AUTH_SECRET` nas variáveis de
-ambiente da Vercel. O frontend autentica no endpoint `/api/auth` e usa um
-cookie `HttpOnly` com token assinado e expiração para operações administrativas.
-As alterações administrativas também exigem um token CSRF de uso duplo.
+ambiente da Vercel. O login/cadastro usa `/api/users`, com cookie `HttpOnly`
+assinado; o endpoint administrativo legado `/api/auth` continua disponível como
+fallback. As alterações administrativas exigem um token CSRF de uso duplo.
+
+Para persistência de usuários e pedidos, configure também `DATABASE_URL` (ou
+`POSTGRES_URL`) apontando para o PostgreSQL. Os endpoints `/api/users` e
+`/api/orders` executam `CREATE TABLE IF NOT EXISTS` automaticamente. As contas
+demo são semeadas com senha derivada por `crypto.scrypt`; se o banco/API estiver
+indisponível, o frontend mantém o fallback local original.
 
 ---
 
@@ -70,7 +76,7 @@ As alterações administrativas também exigem um token CSRF de uso duplo.
 
 ## 📦 O que NÃO está Salvo (Por enquanto)
 
-✅ API de produtos com PostgreSQL
+✅ API de produtos, usuários e pedidos com PostgreSQL
 ✅ Cadastro e exclusão administrativa protegidos por sessão `HttpOnly`
 ❌ Pagamento real (simulado com PIX)  
 ❌ Upload de imagens real (usando URLs de exemplo)  
@@ -100,7 +106,8 @@ R: Sim! É só fazer push para GitHub e importar em outro hosting.
 R: Login com admin → Home → "Adicionar Produto"
 
 **P: Os dados vão perder se reiniciar?**  
-R: Produtos são persistidos no PostgreSQL. Carrinho, sessão e pedidos de demonstração ainda usam localStorage.
+R: Produtos, usuários e pedidos reais são persistidos no PostgreSQL. Carrinho,
+sessão e pedidos de demonstração continuam usando localStorage como fallback.
 
 **P: Quantas pessoas podem usar ao mesmo tempo?**  
 R: Ilimitadas se for frontend puro no navegador. Sem servidor backend.

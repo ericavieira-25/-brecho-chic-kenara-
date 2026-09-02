@@ -107,6 +107,77 @@ function saveRealOrders(orders) {
   }
 }
 
+function saveOrder(order) {
+  const orders = getRealOrders().filter((item) => item.id !== order.id);
+  orders.push(normalizeOrder(order));
+  saveRealOrders(orders);
+  try {
+    localStorage.setItem(LAST_ORDER_KEY, order.id);
+  } catch (error) {
+    console.error('Erro ao salvar último pedido:', error);
+  }
+}
+
+async function requestOrders(path, options = {}) {
+  const response = await fetch(`/api/orders${path}`, {
+    ...options,
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(options.headers || {}),
+    },
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data.erro || 'API de pedidos indisponível.');
+  }
+  return data;
+}
+
+function syncOrderChange(order) {
+  requestOrders(`?id=${encodeURIComponent(order.id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify({
+      id: order.id,
+      status: order.status,
+      paymentStatus: order.paymentStatus,
+      paymentMethod: order.paymentMethod,
+      paidAt: order.paidAt,
+    }),
+  }).catch((error) => {
+    console.warn('Alteração mantida apenas no modo local:', error.message);
+  });
+}
+
+/**
+ * Sincroniza os pedidos persistidos no PostgreSQL com o cache local.
+ * A falha é deliberadamente ignorada para manter o modo demonstração.
+ */
+export async function fetchOrdersByCustomerId(customerId) {
+  try {
+    const data = await requestOrders('');
+    const remoteOrders = Array.isArray(data.orders) ? data.orders.map(normalizeOrder) : [];
+    const localOrders = getRealOrders().filter((order) => order.customerId !== customerId);
+    saveRealOrders([...localOrders, ...remoteOrders]);
+    return remoteOrders.filter((order) => order.customerId === customerId);
+  } catch (error) {
+    console.warn('Usando pedidos locais:', error.message);
+    return getOrdersByCustomerId(customerId);
+  }
+}
+
+export async function fetchOrderById(orderId) {
+  try {
+    const data = await requestOrders(`?id=${encodeURIComponent(orderId)}`);
+    const order = normalizeOrder(data.order);
+    saveOrder(order);
+    return order;
+  } catch (error) {
+    console.warn('Usando pedido local:', error.message);
+    return getOrderById(orderId);
+  }
+}
+
 /**
  * Obtém o ID do último pedido criado
  */
@@ -122,7 +193,7 @@ export function getLastCreatedOrderId() {
 /**
  * Cria um novo pedido a partir dos itens do carrinho
  */
-export function createOrder({
+export async function createOrder({
   user,
   cartItems,
   subtotal,
@@ -187,19 +258,21 @@ export function createOrder({
     total: roundCurrency(total),
   };
 
-  const realOrders = getRealOrders();
-
-  realOrders.push(order);
-
-  saveRealOrders(realOrders);
+  // Cache otimista mantém a experiência demo quando a API não está disponível.
+  saveOrder(order);
 
   try {
-    localStorage.setItem(LAST_ORDER_KEY, order.id);
+    const data = await requestOrders('', {
+      method: 'POST',
+      body: JSON.stringify(order),
+    });
+    const persistedOrder = normalizeOrder(data.order);
+    saveOrder(persistedOrder);
+    return persistedOrder;
   } catch (error) {
-    console.error('Erro ao salvar último pedido:', error);
+    console.warn('Pedido mantido apenas no modo local:', error.message);
+    return order;
   }
-
-  return order;
 }
 
 /**
@@ -271,10 +344,11 @@ export function updateOrderStatus(orderId, newStatus) {
   // Quando o pedido é cancelado antes do pagamento,
   // registra o cancelamento do pagamento.
   if (newStatus === 'cancelado') {
-    order.paymentStatus = 'cancelled';
+    order.paymentStatus = PAYMENT_STATUS.CANCELED;
   }
 
   saveRealOrders(realOrders);
+  syncOrderChange(order);
 
   return order;
 }
@@ -310,6 +384,7 @@ export function updatePaymentMethod(
   order.paymentStatus = PAYMENT_STATUS.PROCESSING;
 
   saveRealOrders(realOrders);
+  syncOrderChange(order);
 
   return order;
 }
@@ -344,6 +419,7 @@ export function confirmPayment(orderId) {
   order.status = ORDER_STATUS.PROCESSING;
 
   saveRealOrders(realOrders);
+  syncOrderChange(order);
 
   return order;
 }
@@ -365,6 +441,7 @@ export function failPayment(orderId) {
   order.paymentStatus = PAYMENT_STATUS.FAILED;
 
   saveRealOrders(realOrders);
+  syncOrderChange(order);
 
   return order;
 }
@@ -393,6 +470,7 @@ export function cancelOrder(orderId) {
   order.paymentStatus = PAYMENT_STATUS.CANCELED;
 
   saveRealOrders(realOrders);
+  syncOrderChange(order);
 
   return order;
 }

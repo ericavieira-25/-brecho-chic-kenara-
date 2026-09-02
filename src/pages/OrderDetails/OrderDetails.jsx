@@ -1,7 +1,7 @@
 import { Navigate, Link, useParams } from 'react-router-dom';
-import { useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { getOrderById } from '../../data/orderService.js';
+import { fetchOrderById, getOrderById } from '../../data/orderService.js';
 import {
   formatPrice,
   formatDate,
@@ -23,10 +23,17 @@ export default function OrderDetails() {
   const { orderId } = useParams();
   const { user } = useAuth();
 
-  const order = useMemo(
-    () => getOrderById(orderId),
-    [orderId]
-  );
+  const [order, setOrder] = useState(() => getOrderById(orderId));
+
+  useEffect(() => {
+    let active = true;
+    fetchOrderById(orderId).then((remoteOrder) => {
+      if (active && remoteOrder) setOrder(remoteOrder);
+    });
+    return () => {
+      active = false;
+    };
+  }, [orderId]);
 
   if (!user) {
     return (
