@@ -18,13 +18,19 @@ function IconSearch() {
     </svg>
   );
 }
+
 function IconHeart({ filled }) {
   return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" style={{ fill: filled ? 'currentColor' : 'none' }}>
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      style={{ fill: filled ? 'currentColor' : 'none' }}
+    >
       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
     </svg>
   );
 }
+
 function IconShoppingBag() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -34,6 +40,7 @@ function IconShoppingBag() {
     </svg>
   );
 }
+
 function IconUser() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -49,96 +56,233 @@ export default function Header() {
   const { favorites } = useFavorites();
   const { hasRole } = useGuard();
   const navigate = useNavigate();
+
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+
   const profileRef = useRef(null);
+
   const isAdmin = hasRole(USER_ROLES.ADMIN);
 
   useEffect(() => {
     function handleClickOutside(e) {
-      if (profileRef.current && !profileRef.current.contains(e.target)) {
+      if (
+        profileRef.current &&
+        !profileRef.current.contains(e.target)
+      ) {
         setProfileOpen(false);
       }
     }
+
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
 
   function handleNav() {
     setMobileOpen(false);
   }
-function handleLogout() {
-  const wasAdmin = user?.role === 'administradora';
 
-  logout();
-  setProfileOpen(false);
+  function handleLogout() {
+    const wasAdmin = user?.role === 'administradora';
 
-  if (wasAdmin) {
-    navigate('/admin/login', { replace: true });
-  } else {
-    navigate('/', { replace: true });
+    logout();
+    setProfileOpen(false);
+
+    if (wasAdmin) {
+      navigate('/admin/login', { replace: true });
+    } else {
+      navigate('/', { replace: true });
+    }
   }
-}
+
   return (
     <>
       <header className={styles.header}>
         <div className={styles.inner}>
+
           {/* Logo */}
           <Link to="/" className={styles.logo}>
             <span className={styles.logoIcon}>🌸</span>
+
             <span className={styles.logoText}>
-              <span className={styles.logoMain}>Brechó Chic</span>
-              <span className={styles.logoSub}>Kenara</span>
+              <span className={styles.logoMain}>
+                Brechó Chic
+              </span>
+
+              <span className={styles.logoSub}>
+                Kenara
+              </span>
             </span>
           </Link>
 
           {/* Desktop nav */}
           <nav className={styles.nav}>
-            <NavLink to="/" end className={({ isActive }) => isActive ? styles.navLinkActive : styles.navLink}>Início</NavLink>
-            <NavLink to="/catalogo" className={({ isActive }) => isActive ? styles.navLinkActive : styles.navLink}>Catálogo</NavLink>
-            <NavLink to="/favoritos" className={({ isActive }) => isActive ? styles.navLinkActive : styles.navLink}>Favoritos</NavLink>
+            <NavLink
+              to="/"
+              end
+              className={({ isActive }) =>
+                isActive
+                  ? styles.navLinkActive
+                  : styles.navLink
+              }
+            >
+              Início
+            </NavLink>
+
+            <NavLink
+              to="/catalogo"
+              className={({ isActive }) =>
+                isActive
+                  ? styles.navLinkActive
+                  : styles.navLink
+              }
+            >
+              Catálogo
+            </NavLink>
+
+            <NavLink
+              to="/favoritos"
+              className={({ isActive }) =>
+                isActive
+                  ? styles.navLinkActive
+                  : styles.navLink
+              }
+            >
+              Favoritos
+            </NavLink>
           </nav>
 
           {/* Actions */}
           <div className={styles.actions}>
-            <button className={styles.iconBtn} onClick={() => setSearchOpen(true)} aria-label="Buscar">
+
+            {/* Buscar */}
+            <button
+              className={styles.iconBtn}
+              onClick={() => setSearchOpen(true)}
+              aria-label="Buscar"
+            >
               <IconSearch />
             </button>
 
-            <Link to="/favoritos" className={styles.iconBtnLink} aria-label={`Favoritos${favorites.length > 0 ? ` (${favorites.length})` : ''}`}>
+            {/* Favoritos */}
+            <Link
+              to="/favoritos"
+              className={styles.iconBtnLink}
+              aria-label={`Favoritos${
+                favorites.length > 0
+                  ? ` (${favorites.length})`
+                  : ''
+              }`}
+            >
               <IconHeart filled={favorites.length > 0} />
-              {favorites.length > 0 && <span className={styles.badge}>{favorites.length}</span>}
+
+              {favorites.length > 0 && (
+                <span className={styles.badge}>
+                  {favorites.length}
+                </span>
+              )}
             </Link>
 
-            <button className={styles.iconBtn} onClick={() => setCartOpen(true)} aria-label={`Carrinho${totalItems > 0 ? ` (${totalItems})` : ''}`}>
+            {/* Carrinho */}
+            <button
+              className={styles.iconBtn}
+              onClick={() => setCartOpen(true)}
+              aria-label={`Carrinho${
+                totalItems > 0
+                  ? ` (${totalItems})`
+                  : ''
+              }`}
+            >
               <IconShoppingBag />
-              {totalItems > 0 && <span className={styles.badge}>{totalItems}</span>}
+
+              {totalItems > 0 && (
+                <span className={styles.badge}>
+                  {totalItems}
+                </span>
+              )}
             </button>
 
-            <div className={styles.profileWrapper} ref={profileRef}>
-              <button className={styles.iconBtn} onClick={() => setProfileOpen(!profileOpen)} aria-label="Perfil">
+            {/* Perfil */}
+            <div
+              className={styles.profileWrapper}
+              ref={profileRef}
+            >
+              <button
+                className={styles.iconBtn}
+                onClick={() => setProfileOpen(!profileOpen)}
+                aria-label="Perfil"
+              >
                 <IconUser />
               </button>
+
               {profileOpen && (
                 <div className={styles.profileDropdown}>
+
                   {user ? (
                     <>
-                      <p className={styles.profileName}>{user.name}</p>
-                      <Link to="/perfil" className={styles.dropdownItem} onClick={() => setProfileOpen(false)}>Meu Perfil</Link>
-                      <Link to="/pedidos" className={styles.dropdownItem} onClick={() => setProfileOpen(false)}>Meus Pedidos</Link>
+                      <p className={styles.profileName}>
+                        {user.name}
+                      </p>
+
+                      <Link
+                        to="/perfil"
+                        className={styles.dropdownItem}
+                        onClick={() => setProfileOpen(false)}
+                      >
+                        Meu Perfil
+                      </Link>
+
+                      <Link
+                        to="/pedidos"
+                        className={styles.dropdownItem}
+                        onClick={() => setProfileOpen(false)}
+                      >
+                        Meus Pedidos
+                      </Link>
+
+                      {/* SOMENTE ADMIN */}
                       {isAdmin && (
-                        <Link to="/adicionar-produto" className={styles.dropdownItem} onClick={() => setProfileOpen(false)}>📦 Adicionar Produto</Link>
+                        <Link
+                          to="/admin/produtos/novo"
+                          className={styles.dropdownItem}
+                          onClick={() => setProfileOpen(false)}
+                        >
+                          👗 Cadastrar Peça
+                        </Link>
                       )}
-                      <button className={styles.dropdownLogout} onClick={handleLogout}>Sair da conta</button>
+
+                      <button
+                        className={styles.dropdownLogout}
+                        onClick={handleLogout}
+                      >
+                        Sair da conta
+                      </button>
                     </>
                   ) : (
                     <>
-                      <Link to="/login" className={styles.dropdownItem} onClick={() => setProfileOpen(false)}>Entrar</Link>
-                      <Link to="/cadastro" className={styles.dropdownItem} onClick={() => setProfileOpen(false)}>Criar conta</Link>
+                      <Link
+                        to="/login"
+                        className={styles.dropdownItem}
+                        onClick={() => setProfileOpen(false)}
+                      >
+                        Entrar
+                      </Link>
+
+                      <Link
+                        to="/cadastro"
+                        className={styles.dropdownItem}
+                        onClick={() => setProfileOpen(false)}
+                      >
+                        Criar conta
+                      </Link>
                     </>
                   )}
+
                 </div>
               )}
             </div>
@@ -150,40 +294,133 @@ function handleLogout() {
               aria-label="Menu"
               aria-expanded={mobileOpen}
             >
-              <span className={[styles.line, mobileOpen ? styles.lineOpen1 : ''].join(' ')} />
-              <span className={[styles.line, mobileOpen ? styles.lineOpen2 : ''].join(' ')} />
-              <span className={[styles.line, mobileOpen ? styles.lineOpen3 : ''].join(' ')} />
+              <span
+                className={[
+                  styles.line,
+                  mobileOpen ? styles.lineOpen1 : '',
+                ].join(' ')}
+              />
+
+              <span
+                className={[
+                  styles.line,
+                  mobileOpen ? styles.lineOpen2 : '',
+                ].join(' ')}
+              />
+
+              <span
+                className={[
+                  styles.line,
+                  mobileOpen ? styles.lineOpen3 : '',
+                ].join(' ')}
+              />
             </button>
+
           </div>
         </div>
 
         {/* Mobile menu */}
         {mobileOpen && (
           <nav className={styles.mobileNav}>
-            <NavLink to="/" end className={styles.mobileNavLink} onClick={handleNav}>Início</NavLink>
-            <NavLink to="/catalogo" className={styles.mobileNavLink} onClick={handleNav}>Catálogo</NavLink>
-            <NavLink to="/favoritos" className={styles.mobileNavLink} onClick={handleNav}>Favoritos</NavLink>
+
+            <NavLink
+              to="/"
+              end
+              className={styles.mobileNavLink}
+              onClick={handleNav}
+            >
+              Início
+            </NavLink>
+
+            <NavLink
+              to="/catalogo"
+              className={styles.mobileNavLink}
+              onClick={handleNav}
+            >
+              Catálogo
+            </NavLink>
+
+            <NavLink
+              to="/favoritos"
+              className={styles.mobileNavLink}
+              onClick={handleNav}
+            >
+              Favoritos
+            </NavLink>
+
             {user ? (
               <>
-                <NavLink to="/perfil" className={styles.mobileNavLink} onClick={handleNav}>Meu Perfil</NavLink>
-                <NavLink to="/pedidos" className={styles.mobileNavLink} onClick={handleNav}>Meus Pedidos</NavLink>
+                <NavLink
+                  to="/perfil"
+                  className={styles.mobileNavLink}
+                  onClick={handleNav}
+                >
+                  Meu Perfil
+                </NavLink>
+
+                <NavLink
+                  to="/pedidos"
+                  className={styles.mobileNavLink}
+                  onClick={handleNav}
+                >
+                  Meus Pedidos
+                </NavLink>
+
+                {/* SOMENTE ADMIN */}
                 {isAdmin && (
-                  <NavLink to="/adicionar-produto" className={styles.mobileNavLink} onClick={handleNav}>📦 Adicionar Produto</NavLink>
+                  <NavLink
+                    to="/admin/produtos/novo"
+                    className={styles.mobileNavLink}
+                    onClick={handleNav}
+                  >
+                    👗 Cadastrar Peça
+                  </NavLink>
                 )}
-                <button className={styles.mobileNavLogout} onClick={() => { handleLogout(); handleNav(); }}>Sair da conta</button>
+
+                <button
+                  className={styles.mobileNavLogout}
+                  onClick={() => {
+                    handleLogout();
+                    handleNav();
+                  }}
+                >
+                  Sair da conta
+                </button>
               </>
             ) : (
               <>
-                <NavLink to="/login" className={styles.mobileNavLink} onClick={handleNav}>Entrar</NavLink>
-                <NavLink to="/cadastro" className={styles.mobileNavLink} onClick={handleNav}>Criar conta</NavLink>
+                <NavLink
+                  to="/login"
+                  className={styles.mobileNavLink}
+                  onClick={handleNav}
+                >
+                  Entrar
+                </NavLink>
+
+                <NavLink
+                  to="/cadastro"
+                  className={styles.mobileNavLink}
+                  onClick={handleNav}
+                >
+                  Criar conta
+                </NavLink>
               </>
             )}
+
           </nav>
         )}
       </header>
 
-      {searchOpen && <SearchBar onClose={() => setSearchOpen(false)} />}
-      <CartDrawer isOpen={cartOpen} onClose={() => setCartOpen(false)} />
+      {searchOpen && (
+        <SearchBar
+          onClose={() => setSearchOpen(false)}
+        />
+      )}
+
+      <CartDrawer
+        isOpen={cartOpen}
+        onClose={() => setCartOpen(false)}
+      />
     </>
   );
 }
