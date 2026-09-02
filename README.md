@@ -10,7 +10,7 @@ Um projeto React + Vite completo com:
 - ✅ Painel da fornecedora (Histórico de vendas e produtos)
 - ✅ Controle financeiro (75% fornecedora / 25% administradora)
 - ✅ Sistema de papéis e permissões (Cliente, Fornecedora, Admin)
-- ✅ Persistência em localStorage
+- ✅ Produtos persistidos em PostgreSQL via API
 - ✅ Disponibilidade de produtos
 
 ---
@@ -117,7 +117,7 @@ src/
 ## 🔒 Autenticação e Autorização
 
 O app utiliza:
-- **localStorage** para persistência (dados salvos no navegador)
+- **PostgreSQL** para produtos e **localStorage** apenas para sessão/carrinho local
 - **Context API** para estado global (usuário, carrinho, favoritos)
 - **ProtectedRoute** para proteção de rotas baseada em papel
 
@@ -144,7 +144,7 @@ Todos os cálculos estão centralizados em `src/data/financial.js`.
 - **Vite 8.2** — Build tool (rápido!)
 - **React Router 7** — Roteamento
 - **CSS Modules** — Estilos isolados
-- **localStorage** — Persistência de dados
+- **PostgreSQL + API Vercel** — Persistência do catálogo
 
 ---
 
@@ -191,8 +191,8 @@ export default function MyPage() {
 
 ## 🚀 Próximos Passos (Roadmap)
 
-- [ ] Backend real com Node.js + Express
-- [ ] Banco de dados (PostgreSQL/MongoDB)
+- [x] Backend real com API e PostgreSQL para produtos
+- [ ] Autenticação completa no backend para usuários e pedidos
 - [ ] Integração com gateway de pagamento real (Stripe, MercadoPago)
 - [ ] Envio de e-mails de confirmação
 - [ ] Notificações em tempo real

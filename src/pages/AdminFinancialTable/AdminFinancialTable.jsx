@@ -7,9 +7,6 @@
  */
 
 import { useMemo } from 'react';
-import { useGuard } from '../../hooks/useGuard.js';
-import { Navigate } from 'react-router-dom';
-import { USER_ROLES } from '../../data/roles.js';
 import { mockOrders } from '../../data/orders.js';
 import { mergeOrdersWithMock } from '../../data/orderService.js';
 import { calculateOrderSplitBySupplier, calculateTenPercentMetric, roundCurrency } from '../../data/financial.js';
@@ -22,24 +19,33 @@ function formatPrice(value) {
   }).format(value);
 }
 
-function formatDate(dateStr) {
-  return new Date(dateStr + 'T00:00:00').toLocaleDateString('pt-BR');
-}
-
 export default function AdminFinancialTable() {
-  const { isAuth, hasRole } = useGuard();
-
-  // Verificar autorização
-  if (!isAuth) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (!hasRole(USER_ROLES.ADMIN)) {
-    return <Navigate to="/" replace />;
-  }
+  const tableData = useMemo(() => {
+    const allOrders = mergeOrdersWithMock(mockOrders);
+    const grouped = {};
+    allOrders.forEach((order) => {
+      const [year, month] = order.date.split('-');
+      const monthKey = `${year}-${month}`;
+      if (!grouped[monthKey]) grouped[monthKey] = [];
+      grouped[monthKey].push(order);
+    });
+    return Object.entries(grouped).sort((a, b) => a[0].localeCompare(b[0])).map(([period, orders]) => {
+      const items = orders.flatMap((order) => order.items);
+      const totalSales = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      const split = calculateOrderSplitBySupplier(items);
+      return { period, totalOrders: orders.length, totalSales: roundCurrency(totalSales), supplierShare: split.totalSupplierShare, adminShare: split.totalAdminShare, metric10: roundCurrency(calculateTenPercentMetric(totalSales)) };
+    });
+  }, []);
+  const totals = useMemo(() => tableData.reduce((result, row) => ({
+    totalOrders: result.totalOrders + row.totalOrders,
+    totalSales: roundCurrency(result.totalSales + row.totalSales),
+    totalSupplierShare: roundCurrency(result.totalSupplierShare + row.supplierShare),
+    totalAdminShare: roundCurrency(result.totalAdminShare + row.adminShare),
+    totalMetric10: roundCurrency(result.totalMetric10 + row.metric10),
+  }), { totalOrders: 0, totalSales: 0, totalSupplierShare: 0, totalAdminShare: 0, totalMetric10: 0 }), [tableData]);
 
   // Agrupar dados por período (mês) - usando pedidos reais + mockOrders
-  const tableData = useMemo(() => {
+  /*
     const allOrders = mergeOrdersWithMock(mockOrders);
     const grouped = {};
 
@@ -85,10 +91,10 @@ export default function AdminFinancialTable() {
       });
 
     return rows;
-  }, []);
+  }, []); */
 
   // Calcular totais gerais
-  const totals = useMemo(() => {
+  /*
     let totalOrders = 0;
     let totalSales = 0;
     let totalSupplierShare = 0;
@@ -110,7 +116,7 @@ export default function AdminFinancialTable() {
       totalAdminShare: roundCurrency(totalAdminShare),
       totalMetric10: roundCurrency(totalMetric10),
     };
-  }, [tableData]);
+  }, [tableData]); */
 
   return (
     <div className={styles.container}>

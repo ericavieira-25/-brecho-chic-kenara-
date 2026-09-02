@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom';
 
 import { useAuth } from '../../context/AuthContext';
 import { categories, sizes, conditions } from '../../data/categories';
-import { addProduct } from '../../services/productService';
+import { addProduct } from '../../data/productService.js';
 
 import Input from '../../components/ui/Input/Input';
 import Button from '../../components/ui/Button/Button';

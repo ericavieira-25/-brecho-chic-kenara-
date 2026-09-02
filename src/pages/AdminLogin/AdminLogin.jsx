@@ -8,7 +8,7 @@ import styles from './AdminLogin.module.css';
 
 export default function AdminLogin() {
   const navigate = useNavigate();
-  const { user, login, error, setError } = useAuth();
+  const { user, adminLogin, error, setError } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -20,7 +20,7 @@ export default function AdminLogin() {
     return <Navigate to="/admin" replace />;
   }
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     setError('');
@@ -40,7 +40,7 @@ export default function AdminLogin() {
       return;
     }
 
-    const success = login(normalizedEmail, password);
+    const success = await adminLogin(normalizedEmail, password);
 
     if (!success) {
       setLoading(false);

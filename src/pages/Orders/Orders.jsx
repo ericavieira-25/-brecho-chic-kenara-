@@ -25,13 +25,10 @@ const statusVariant = {
 
 export default function Orders() {
   const { user } = useAuth();
-
-  if (!user) {
-    return <Navigate to="/login?redirect=/pedidos" replace />;
-  }
+  const userId = user?.id;
 
   const allOrders = useMemo(() => {
-    const realOrders = getOrdersByCustomerId(user.id);
+    const realOrders = userId ? getOrdersByCustomerId(userId) : [];
 
     const demoOrders = mockOrders
       .slice(0, 2)
@@ -40,7 +37,11 @@ export default function Orders() {
     return [...demoOrders, ...realOrders]
       .map(normalizeOrder)
       .sort((a, b) => new Date(b.date) - new Date(a.date));
-  }, [user.id]);
+  }, [userId]);
+
+  if (!user) {
+    return <Navigate to="/login?redirect=/pedidos" replace />;
+  }
 
   return (
     <div className={styles.page}>

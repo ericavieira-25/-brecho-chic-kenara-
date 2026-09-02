@@ -6,9 +6,7 @@
  */
 
 import { useMemo, useState } from 'react';
-import { useGuard } from '../../hooks/useGuard.js';
-import { Navigate, Link } from 'react-router-dom';
-import { USER_ROLES } from '../../data/roles.js';
+import { Link } from 'react-router-dom';
 import { suppliers } from '../../data/suppliers.js';
 import { products } from '../../data/products.js';
 import { mockOrders } from '../../data/orders.js';
@@ -32,17 +30,8 @@ function formatPrice(value) {
 }
 
 export default function AdminSuppliers() {
-  const { isAuth, hasRole } = useGuard();
 
   const [, forceUpdate] = useState(0);
-
-  if (!isAuth) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (!hasRole(USER_ROLES.ADMIN)) {
-    return <Navigate to="/" replace />;
-  }
 
   const suppliersData = useMemo(() => {
     const allOrders = mergeOrdersWithMock(mockOrders);

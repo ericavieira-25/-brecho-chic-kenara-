@@ -7,12 +7,10 @@
 
 import { useMemo } from 'react';
 import { useGuard } from '../../hooks/useGuard.js';
-import { Navigate } from 'react-router-dom';
-import { USER_ROLES } from '../../data/roles.js';
 import { getSupplierById } from '../../data/suppliers.js';
 import { products } from '../../data/products.js';
 import { mockOrders } from '../../data/orders.js';
-import { mergeOrdersWithMock, getOrdersBySupplier } from '../../data/orderService.js';
+import { mergeOrdersWithMock } from '../../data/orderService.js';
 import { calculateOrderSplitBySupplier, roundCurrency } from '../../data/financial.js';
 import styles from './SupplierDashboard.module.css';
 
@@ -28,20 +26,21 @@ function formatDate(dateStr) {
 }
 
 export default function SupplierDashboard() {
-  const { isAuth, hasRole, user } = useGuard();
-
-  // Verificar autenticação e papel
-  if (!isAuth) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (!hasRole(USER_ROLES.SUPPLIER)) {
-    return <Navigate to="/" replace />;
-  }
+  const { user } = useGuard();
+  const supplierId = user?.supplierId;
+  const supplier = supplierId ? getSupplierById(supplierId) : null;
+  const data = useMemo(() => {
+    if (!supplierId || !supplier) return { products: [], orders: [], orderItems: [], totalSales: 0, totalProductsSold: 0, supplierShare: 0, availableProducts: 0 };
+    const allOrders = mergeOrdersWithMock(mockOrders);
+    const supplierProducts = products.filter((p) => p.supplierId === supplierId);
+    const supplierOrders = allOrders.filter((order) => order.items.some((item) => item.supplierId === supplierId));
+    const supplierOrderItems = supplierOrders.flatMap((order) => order.items.filter((item) => item.supplierId === supplierId));
+    const split = calculateOrderSplitBySupplier(supplierOrderItems);
+    const supplierSplit = split.bySupplier.find((s) => s.supplierId === supplierId);
+    return { products: supplierProducts, orders: supplierOrders, orderItems: supplierOrderItems, totalSales: roundCurrency(supplierSplit?.grossAmount || 0), totalProductsSold: supplierOrderItems.reduce((sum, item) => sum + item.quantity, 0), supplierShare: roundCurrency(supplierSplit?.supplierShare || 0), availableProducts: supplierProducts.filter((p) => p.available).length };
+  }, [supplierId, supplier]);
 
   // Obter ID da fornecedora do usuário autenticado
-  const supplierId = user?.supplierId;
-
   if (!supplierId) {
     return (
       <div className={styles.container}>
@@ -54,8 +53,6 @@ export default function SupplierDashboard() {
   }
 
   // Buscar dados da fornecedora
-  const supplier = getSupplierById(supplierId);
-
   if (!supplier) {
     return (
       <div className={styles.container}>
@@ -68,7 +65,8 @@ export default function SupplierDashboard() {
   }
 
   // Processar dados - APENAS da fornecedora autenticada (usando pedidos reais + demo)
-  const data = useMemo(() => {
+  /* Data is derived before authorization branches to preserve hook order. */
+  /*
     const allOrders = mergeOrdersWithMock(mockOrders);
     
     // Produtos APENAS desta fornecedora
@@ -116,7 +114,7 @@ export default function SupplierDashboard() {
       supplierShare: roundCurrency(supplierShare),
       availableProducts,
     };
-  }, [supplierId]);
+  }, [supplierId]); */
 
   return (
     <div className={styles.container}>
