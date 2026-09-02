@@ -1,6 +1,7 @@
 import { Pool } from 'pg';
 
 import crypto from 'node:crypto';
+import { ensureProductsTable } from './_db.js';
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -68,6 +69,8 @@ function validateProduct(body) {
 
 export default async function handler(req, res) {
   try {
+    await ensureProductsTable();
+
     // GET /api/products
     if (req.method === 'GET') {
       const result = await pool.query(

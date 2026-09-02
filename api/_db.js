@@ -1,4 +1,5 @@
 import { Pool } from 'pg';
+import { products } from '../src/data/products.js';
 
 let pool;
 
@@ -61,4 +62,59 @@ export async function ensureOrdersTable() {
       items JSONB NOT NULL DEFAULT '[]'::jsonb
     )
   `);
+}
+
+export async function ensureProductsTable() {
+  const database = getPool();
+
+  await database.query(`
+    CREATE TABLE IF NOT EXISTS products (
+      id INTEGER PRIMARY KEY,
+      name TEXT NOT NULL,
+      category TEXT,
+      category_name TEXT,
+      size TEXT,
+      condition TEXT,
+      condition_label TEXT,
+      price NUMERIC(12, 2) NOT NULL,
+      original_price NUMERIC(12, 2),
+      brand TEXT,
+      description TEXT,
+      photo TEXT,
+      supplier_id TEXT,
+      supplier_name TEXT,
+      created_by TEXT,
+      status TEXT NOT NULL DEFAULT 'disponivel',
+      created_at DATE NOT NULL DEFAULT CURRENT_DATE
+    )
+  `);
+
+  const countResult = await database.query('SELECT COUNT(*)::int AS count FROM products');
+  if (countResult.rows[0].count > 0) return;
+
+  for (const product of products) {
+    await database.query(
+      `INSERT INTO products
+        (id, name, category, size, condition, price, original_price, brand,
+         description, photo, supplier_id, supplier_name, status, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+       ON CONFLICT (id) DO NOTHING`,
+      [
+        product.id,
+        product.name,
+        product.category || null,
+        product.size || null,
+        product.condition || null,
+        product.price,
+        product.originalPrice ?? null,
+        product.brand || null,
+        product.description || null,
+        product.images?.[0] || null,
+        product.supplierId || null,
+        product.seller || null,
+        product.available === false ? 'indisponivel' : 'disponivel',
+        product.createdAt || null,
+      ]
+    );
+  }
 }
