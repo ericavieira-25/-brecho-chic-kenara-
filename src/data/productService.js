@@ -8,19 +8,13 @@
 import { getSupplierById, getSupplierByName } from './suppliers.js';
 import { isProductAvailable } from './productAvailabilityService.js';
 
-const API_URL = 'http://localhost:3000/api/products';
+const API_URL = '/api/products';
 
-/**
- * Converte o formato vindo do PostgreSQL
- * para o formato usado pelo frontend.
- */
 function normalizeProduct(product) {
   if (!product) return product;
 
   return {
     ...product,
-
-    // PostgreSQL -> frontend
     createdAt: product.createdAt || product.created_at || null,
 
     categoryName:
@@ -53,16 +47,11 @@ function normalizeProduct(product) {
       product.created_by ||
       null,
 
-    // Mantém photo/image compatíveis
     photo: product.photo || null,
     image: product.image || null,
   };
 }
 
-/**
- * Enriquece produto com informações de fornecedor
- * e disponibilidade.
- */
 function enrichProduct(rawProduct) {
   if (!rawProduct) return rawProduct;
 
@@ -74,10 +63,6 @@ function enrichProduct(rawProduct) {
 
   let available;
 
-  /*
-   * Produtos vindos do banco usam o campo status.
-   * Produtos antigos continuam usando o localStorage.
-   */
   if (product.status) {
     available = product.status === 'disponivel';
   } else {
@@ -103,10 +88,6 @@ function enrichProduct(rawProduct) {
       'Fornecedora',
   };
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// LEITURA BÁSICA
-// ─────────────────────────────────────────────────────────────────────────────
 
 export async function getAllProducts() {
   try {
@@ -148,10 +129,6 @@ export async function getProductById(id) {
     (product) => product.id === Number(id)
   );
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// LISTAGENS TEMÁTICAS
-// ─────────────────────────────────────────────────────────────────────────────
 
 export async function getNewestProducts(limit = 8) {
   const products = await getAvailableProducts();
@@ -241,10 +218,6 @@ export async function getRelatedBySupplier(
     .slice(0, limit);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// BUSCA E FILTRAGEM
-// ─────────────────────────────────────────────────────────────────────────────
-
 export async function filterProducts(
   query = '',
   filters = {},
@@ -263,7 +236,6 @@ export async function filterProducts(
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '');
 
-  // Busca
   if (query.trim()) {
     const words = normalize(query.trim())
       .split(/\s+/)
@@ -289,32 +261,24 @@ export async function filterProducts(
     });
   }
 
-  // Categorias
   if (filters.categories?.length) {
     list = list.filter((product) =>
-      filters.categories.includes(
-        product.category
-      )
+      filters.categories.includes(product.category)
     );
   }
 
-  // Tamanhos
   if (filters.sizes?.length) {
     list = list.filter((product) =>
       filters.sizes.includes(product.size)
     );
   }
 
-  // Conservação
   if (filters.conditions?.length) {
     list = list.filter((product) =>
-      filters.conditions.includes(
-        product.condition
-      )
+      filters.conditions.includes(product.condition)
     );
   }
 
-  // Preço mínimo
   if (
     filters.minPrice !== '' &&
     filters.minPrice !== undefined
@@ -326,7 +290,6 @@ export async function filterProducts(
     );
   }
 
-  // Preço máximo
   if (
     filters.maxPrice !== '' &&
     filters.maxPrice !== undefined
@@ -376,10 +339,7 @@ export async function quickSearch(
   query,
   limit = 6
 ) {
-  if (
-    !query ||
-    query.trim().length < 2
-  ) {
+  if (!query || query.trim().length < 2) {
     return [];
   }
 
@@ -391,10 +351,6 @@ export async function quickSearch(
 
   return products.slice(0, limit);
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// METADADOS
-// ─────────────────────────────────────────────────────────────────────────────
 
 export async function getSellers() {
   const products = await getAllProducts();
@@ -415,7 +371,9 @@ export async function getPriceRange() {
 
   const prices = products
     .map((product) => Number(product.price))
-    .filter((price) => !Number.isNaN(price));
+    .filter(
+      (price) => !Number.isNaN(price)
+    );
 
   if (prices.length === 0) {
     return {
