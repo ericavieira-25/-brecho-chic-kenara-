@@ -246,15 +246,26 @@ export default function Header() {
                       </Link>
 
                       {/* SOMENTE ADMIN */}
-                      {isAdmin && (
-                        <Link
-                          to="/admin/produtos/novo"
-                          className={styles.dropdownItem}
-                          onClick={() => setProfileOpen(false)}
-                        >
-                          👗 Cadastrar Peça
-                        </Link>
-                      )}
+                      {/* ÁREA ADMINISTRATIVA */}
+{isAdmin && (
+  <>
+    <Link
+      to="/admin"
+      className={styles.dropdownItem}
+      onClick={() => setProfileOpen(false)}
+    >
+      ⚙️ Painel Administrativo
+    </Link>
+
+    <Link
+      to="/admin/produtos/novo"
+      className={styles.dropdownItem}
+      onClick={() => setProfileOpen(false)}
+    >
+      👗 Cadastrar Peça
+    </Link>
+  </>
+)}
 
                       <button
                         className={styles.dropdownLogout}
@@ -367,17 +378,26 @@ export default function Header() {
                 </NavLink>
 
                 {/* SOMENTE ADMIN */}
-                {isAdmin && (
-                  <NavLink
-                    to="/admin/produtos/novo"
-                    className={styles.mobileNavLink}
-                    onClick={handleNav}
-                  >
-                    👗 Cadastrar Peça
-                  </NavLink>
-                )}
+               {/* ÁREA ADMINISTRATIVA */}
+{isAdmin && (
+  <>
+    <NavLink
+      to="/admin"
+      className={styles.mobileNavLink}
+      onClick={handleNav}
+    >
+      ⚙️ Painel Administrativo
+    </NavLink>
 
-                <button
+    <NavLink
+      to="/admin/produtos/novo"
+      className={styles.mobileNavLink}
+      onClick={handleNav}
+    >
+      👗 Cadastrar Peça
+    </NavLink>
+  </>
+)}  <button
                   className={styles.mobileNavLogout}
                   onClick={() => {
                     handleLogout();
