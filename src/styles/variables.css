@@ -1,52 +1,57 @@
 :root {
-  /* ── Brand Palette ── */
-  --color-primary: #b8926a;
-  --color-primary-dark: #9a7452;
-  --color-primary-light: #e8d5c2;
-  --color-primary-xlight: #f5ede4;
+  /* ── Brand Palette — Brechó Chic Kenara ── */
+  /* Rosa pink principal (logo/marca) */
+  --color-primary:        #d81b60;
+  --color-primary-dark:   #ad1457;
+  --color-primary-light:  #f8bbd0;
+  --color-primary-xlight: #fce4ec;
 
-  --color-secondary: #f7f0e8;
-  --color-accent: #c47a3a;
-  --color-accent-light: #f5dfc4;
+  /* Dourado (segundo logo) */
+  --color-gold:           #c9a96e;
+  --color-gold-dark:      #a07840;
+  --color-gold-light:     #f0e4cc;
+
+  --color-secondary: #fff0f5;
+  --color-accent:    #e91e8c;
+  --color-accent-light: #fce4ec;
 
   /* ── Neutrals ── */
-  --color-text: #1a1714;
-  --color-text-light: #5c5650;
-  --color-text-muted: #9c9490;
-  --color-bg: #faf9f7;
-  --color-bg-subtle: #f3f0ec;
-  --color-surface: #ffffff;
-  --color-surface-raised: #fdfcfb;
-  --color-border: #e6dfd7;
-  --color-border-subtle: #f0ebe5;
+  --color-text:         #1a1018;
+  --color-text-light:   #5c4a54;
+  --color-text-muted:   #9c8090;
+  --color-bg:           #fffafc;
+  --color-bg-subtle:    #fdf0f5;
+  --color-surface:      #ffffff;
+  --color-surface-raised: #fffcfd;
+  --color-border:       #f0d0dc;
+  --color-border-subtle:#fae8ef;
 
   /* ── Semantic ── */
-  --color-success: #3d8b5c;
+  --color-success:       #3d8b5c;
   --color-success-light: #e6f4ee;
-  --color-error: #c0392b;
-  --color-error-light: #fdf0ee;
-  --color-warning: #d4860a;
+  --color-error:         #c0392b;
+  --color-error-light:   #fdf0ee;
+  --color-warning:       #d4860a;
   --color-warning-light: #fef6e4;
-  --color-info: #2563a8;
-  --color-info-light: #e8f0fb;
+  --color-info:          #2563a8;
+  --color-info-light:    #e8f0fb;
 
   /* ── Typography ── */
   --font-primary: 'Playfair Display', Georgia, serif;
-  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-body:    'Inter', system-ui, -apple-system, sans-serif;
 
-  --text-xs:   0.6875rem;   /* 11px */
-  --text-sm:   0.8125rem;   /* 13px */
-  --text-base: 0.9375rem;   /* 15px */
-  --text-md:   1rem;        /* 16px */
-  --text-lg:   1.125rem;    /* 18px */
-  --text-xl:   1.25rem;     /* 20px */
-  --text-2xl:  1.5rem;      /* 24px */
-  --text-3xl:  1.875rem;    /* 30px */
-  --text-4xl:  2.25rem;     /* 36px */
-  --text-5xl:  3rem;        /* 48px */
-  --text-6xl:  3.75rem;     /* 60px */
+  --text-xs:   0.6875rem;
+  --text-sm:   0.8125rem;
+  --text-base: 0.9375rem;
+  --text-md:   1rem;
+  --text-lg:   1.125rem;
+  --text-xl:   1.25rem;
+  --text-2xl:  1.5rem;
+  --text-3xl:  1.875rem;
+  --text-4xl:  2.25rem;
+  --text-5xl:  3rem;
+  --text-6xl:  3.75rem;
 
-  /* keep legacy aliases */
   --font-size-xs:   var(--text-xs);
   --font-size-sm:   var(--text-sm);
   --font-size-base: var(--text-base);
@@ -83,27 +88,27 @@
   --space-24: 6rem;
 
   /* ── Border radius ── */
-  --radius-xs: 3px;
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 20px;
-  --radius-2xl: 28px;
+  --radius-xs:   3px;
+  --radius-sm:   6px;
+  --radius-md:   10px;
+  --radius-lg:   14px;
+  --radius-xl:   20px;
+  --radius-2xl:  28px;
   --radius-full: 9999px;
 
   /* ── Shadows ── */
-  --shadow-xs: 0 1px 2px rgba(0,0,0,0.06);
-  --shadow-sm: 0 1px 4px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.09), 0 2px 4px rgba(0,0,0,0.05);
-  --shadow-lg: 0 8px 24px rgba(0,0,0,0.11), 0 3px 8px rgba(0,0,0,0.06);
-  --shadow-xl: 0 16px 48px rgba(0,0,0,0.14), 0 6px 16px rgba(0,0,0,0.08);
-  --shadow-2xl: 0 32px 64px rgba(0,0,0,0.18);
+  --shadow-xs:    0 1px 2px rgba(216,27,96,0.06);
+  --shadow-sm:    0 1px 4px rgba(216,27,96,0.07), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md:    0 4px 12px rgba(216,27,96,0.09), 0 2px 4px rgba(0,0,0,0.05);
+  --shadow-lg:    0 8px 24px rgba(216,27,96,0.11), 0 3px 8px rgba(0,0,0,0.06);
+  --shadow-xl:    0 16px 48px rgba(216,27,96,0.14), 0 6px 16px rgba(0,0,0,0.08);
+  --shadow-2xl:   0 32px 64px rgba(216,27,96,0.18);
   --shadow-inner: inset 0 1px 3px rgba(0,0,0,0.06);
 
   /* ── Transitions ── */
-  --ease: cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-out: cubic-bezier(0, 0, 0.2, 1);
-  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease:        cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out:    cubic-bezier(0, 0, 0.2, 1);
+  --ease-in:     cubic-bezier(0.4, 0, 1, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 
   --transition-fast:   150ms var(--ease);

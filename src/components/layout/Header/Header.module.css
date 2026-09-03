@@ -34,30 +34,34 @@
 }
 
 .logoIcon {
-  font-size: 1.5rem;
-  line-height: 1;
+  width: 36px;
+  height: 36px;
+  color: var(--color-primary);
+  flex-shrink: 0;
 }
 
 .logoText {
   display: flex;
   flex-direction: column;
-  line-height: 1.1;
+  line-height: 1.05;
 }
 
 .logoMain {
   font-family: var(--font-primary);
-  font-size: var(--text-base);
+  font-size: 1.35rem;
   font-weight: var(--font-weight-bold);
-  color: var(--color-text);
-  letter-spacing: -0.01em;
+  color: var(--color-primary);
+  letter-spacing: -0.02em;
+  font-style: italic;
 }
 
 .logoSub {
   font-family: var(--font-primary);
-  font-size: var(--text-lg);
+  font-size: var(--text-sm);
   font-weight: var(--font-weight-bold);
-  color: var(--color-primary);
-  letter-spacing: -0.02em;
+  color: var(--color-text);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 /* ── Desktop nav ── */

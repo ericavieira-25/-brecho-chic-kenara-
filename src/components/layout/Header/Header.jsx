@@ -107,16 +107,20 @@ export default function Header() {
 
           {/* Logo */}
           <Link to="/" className={styles.logo}>
-            <span className={styles.logoIcon}>🌸</span>
+            {/* Cabide SVG — identidade visual da marca */}
+            <svg className={styles.logoIcon} viewBox="0 0 40 36" fill="none" aria-hidden="true">
+              {/* Coroa */}
+              <path d="M20 2 L22.5 6 L26 4 L24.5 8 L15.5 8 L14 4 L17.5 6 Z" fill="currentColor"/>
+              {/* Cabide */}
+              <path d="M20 8 C20 8 20 11 20 12 C18 12 12 15 10 19 C9 21 10 22 12 22 L28 22 C30 22 31 21 30 19 C28 15 22 12 20 12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" fill="none"/>
+              <circle cx="20" cy="11.5" r="1.5" fill="currentColor"/>
+              {/* Coração pequeno */}
+              <path d="M20 28 C20 28 16 25 16 23 C16 21.5 17.5 21 18.5 22 L20 24 L21.5 22 C22.5 21 24 21.5 24 23 C24 25 20 28 20 28Z" fill="currentColor" opacity="0.7"/>
+            </svg>
 
             <span className={styles.logoText}>
-              <span className={styles.logoMain}>
-                Brechó Chic
-              </span>
-
-              <span className={styles.logoSub}>
-                Kenara
-              </span>
+              <span className={styles.logoMain}>Chic</span>
+              <span className={styles.logoSub}>Kenara</span>
             </span>
           </Link>
 
