@@ -1,7 +1,6 @@
 import { Navigate, Link } from 'react-router-dom';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { mockOrders } from '../../data/orders.js';
 import {
   getOrdersByCustomerId,
   fetchOrdersByCustomerId,
@@ -27,32 +26,24 @@ const statusVariant = {
 export default function Orders() {
   const { user } = useAuth();
   const userId = user?.id;
-  const [realOrders, setRealOrders] = useState(() => (
-    userId ? getOrdersByCustomerId(userId) : []
-  ));
+  const [orders, setOrders] = useState(() =>
+    userId ? getOrdersByCustomerId(userId).map(normalizeOrder) : []
+  );
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let active = true;
     if (userId) {
-      fetchOrdersByCustomerId(userId).then((orders) => {
-        if (active) setRealOrders(orders);
+      fetchOrdersByCustomerId(userId).then((fetched) => {
+        if (active) setOrders(fetched.map(normalizeOrder));
+      }).finally(() => {
+        if (active) setLoading(false);
       });
+    } else {
+      setLoading(false);
     }
-    return () => {
-      active = false;
-    };
+    return () => { active = false; };
   }, [userId]);
-
-  const allOrders = useMemo(() => {
-    const demoOrders = mockOrders
-      .slice(0, 2)
-      .map(normalizeOrder);
-
-    const userOrders = realOrders.filter((order) => order.customerId === userId);
-    return [...demoOrders, ...userOrders]
-      .map(normalizeOrder)
-      .sort((a, b) => new Date(b.date) - new Date(a.date));
-  }, [realOrders, userId]);
 
   if (!user) {
     return <Navigate to="/login?redirect=/pedidos" replace />;
@@ -63,68 +54,31 @@ export default function Orders() {
       <div className={styles.inner}>
         <h1 className={styles.title}>Meus Pedidos</h1>
 
-        {allOrders.length === 0 ? (
+        {loading ? (
+          <p style={{ textAlign: 'center', color: '#888' }}>Carregando pedidos…</p>
+        ) : orders.length === 0 ? (
           <div className={styles.empty}>
             <p className={styles.emptyIcon}>📦</p>
-
             <h2>Nenhum pedido ainda</h2>
-
-            <p>
-              Explore o catálogo e faça sua primeira compra!
-            </p>
-
+            <p>Explore o catálogo e faça sua primeira compra!</p>
             <Link to="/catalogo">
-              <Button variant="primary">
-                Ir ao catálogo
-              </Button>
+              <Button variant="primary">Ir ao catálogo</Button>
             </Link>
           </div>
         ) : (
           <div className={styles.list}>
-            {allOrders.map((order) => {
-              const isRealOrder =
-                order.id.startsWith('ORDER-');
-
-              return (
-                <div
-                  key={order.id}
-                  className={[
-                    styles.order,
-                    isRealOrder && styles.realOrder,
-                  ]
-                    .filter(Boolean)
-                    .join(' ')}
-                >
-                  <Link
-                    to={`/pedidos/${order.id}`}
-                    className={styles.orderLink}
-                  >
+            {orders
+              .sort((a, b) => new Date(b.date) - new Date(a.date))
+              .map((order) => (
+                <div key={order.id} className={styles.order}>
+                  <Link to={`/pedidos/${order.id}`} className={styles.orderLink}>
                     <div className={styles.orderHeader}>
                       <div>
-                        <p className={styles.orderId}>
-                          Pedido {order.id}
-
-                          {isRealOrder && (
-                            <span className={styles.badge}>
-                              {' '}
-                              ✨ Novo
-                            </span>
-                          )}
-                        </p>
-
-                        <p className={styles.orderDate}>
-                          {formatDate(order.date)}
-                        </p>
+                        <p className={styles.orderId}>Pedido {order.id}</p>
+                        <p className={styles.orderDate}>{formatDate(order.date)}</p>
                       </div>
-
-                      <Badge
-                        variant={
-                          statusVariant[order.status] ||
-                          'default'
-                        }
-                      >
-                        {order.status ===
-                        'aguardando_pagamento'
+                      <Badge variant={statusVariant[order.status] || 'default'}>
+                        {order.status === 'aguardando_pagamento'
                           ? 'Aguardando pagamento'
                           : getStatusLabel(order.status)}
                       </Badge>
@@ -132,58 +86,30 @@ export default function Orders() {
 
                     <div className={styles.orderItems}>
                       {order.items.map((item, i) => (
-                        <div
-                          key={`${item.productId}-${i}`}
-                          className={styles.orderItem}
-                        >
+                        <div key={`${item.productId}-${i}`} className={styles.orderItem}>
                           {item.image && (
-                            <img
-                              src={item.image}
-                              alt={item.name}
-                              className={styles.itemThumb}
-                            />
+                            <img src={item.image} alt={item.name} className={styles.itemThumb} />
                           )}
-
                           <div className={styles.itemInfo}>
-                            <p className={styles.itemName}>
-                              {item.name}
-                            </p>
-
-                            <p className={styles.itemQty}>
-                              Qtd: {item.quantity}
-                            </p>
+                            <p className={styles.itemName}>{item.name}</p>
+                            <p className={styles.itemQty}>Qtd: {item.quantity}</p>
                           </div>
-
-                          <p className={styles.itemPrice}>
-                            {formatPrice(
-                              item.price * item.quantity
-                            )}
-                          </p>
+                          <p className={styles.itemPrice}>{formatPrice(item.price * item.quantity)}</p>
                         </div>
                       ))}
                     </div>
                   </Link>
 
                   <div className={styles.orderFooter}>
-                    <span className={styles.orderTotal}>
-                      Total: {formatPrice(order.total)}
-                    </span>
-
-                    {isRealOrder &&
-                      order.status ===
-                        'aguardando_pagamento' && (
-                        <Link
-                          to={`/pagamento/pix/${order.id}`}
-                        >
-                          <Button variant="primary">
-                            💳 Pagar com PIX
-                          </Button>
-                        </Link>
-                      )}
+                    <span className={styles.orderTotal}>Total: {formatPrice(order.total)}</span>
+                    {order.status === 'aguardando_pagamento' && (
+                      <Link to={`/pagamento/pix/${order.id}`}>
+                        <Button variant="primary">💳 Pagar com PIX</Button>
+                      </Link>
+                    )}
                   </div>
                 </div>
-              );
-            })}
+              ))}
           </div>
         )}
       </div>

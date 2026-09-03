@@ -7,14 +7,11 @@
  */
 
 import AdminSidebar from '../../components/admin/AdminSidebar/AdminSidebar.jsx';
-import { useMemo } from 'react';
-import { useGuard } from '../../hooks/useGuard.js';
-import { mockOrders } from '../../data/orders.js';
-import { mergeOrdersWithMock, getRealOrdersStats } from '../../data/orderService.js';
-import { getOrderItemsFlat } from '../../data/orders.js';
+import { useMemo, useEffect, useState } from 'react';
+import { normalizeOrder, getRealOrders } from '../../data/orderService.js';
 import { calculateOrderSplitBySupplier, calculateTenPercentMetric, roundCurrency } from '../../data/financial.js';
 import styles from './AdminDashboard.module.css';
-import { Navigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 function formatPrice(value) {
   return new Intl.NumberFormat('pt-BR', {
@@ -24,14 +21,20 @@ function formatPrice(value) {
 }
 
 export default function AdminDashboard() {
-  // Verificar autorização
-  
+  const [allOrders, setAllOrders] = useState(() => getRealOrders());
 
-  // Calcular métricas
+  useEffect(() => {
+    fetch('/api/orders', { credentials: 'include' })
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data.orders)) {
+          setAllOrders(data.orders.map(normalizeOrder));
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   const metrics = useMemo(() => {
-    // Combinar pedidos de demonstração + pedidos reais criados
-    const allOrders = mergeOrdersWithMock(mockOrders);
-
     const totalSales = allOrders.reduce((sum, order) => {
       const total = Number(order?.total || 0);
       const shipping = Number(order?.shipping || 0);
@@ -55,7 +58,7 @@ export default function AdminDashboard() {
       totalAdminShare: split.totalAdminShare,
       metric10,
     };
-  }, []);
+  }, [allOrders]);
 
   return (
   <div className={styles.adminLayout}>
@@ -169,7 +172,8 @@ export default function AdminDashboard() {
         </div>
 
         <div className={styles.ordersList}>
-          {mergeOrdersWithMock(mockOrders)
+          {allOrders
+            .slice()
             .sort((a, b) => new Date(b.date) - new Date(a.date))
             .slice(0, 10)
             .map((order) => (
@@ -297,9 +301,9 @@ export default function AdminDashboard() {
             </thead>
 
             <tbody>
-              {mergeOrdersWithMock(mockOrders)
-                .filter((order) => order.id.startsWith('ORDER-'))
-                .sort(
+              {allOrders
+                     .filter((order) => order.id.startsWith('ORDER-'))
+                     .sort(
                   (a, b) =>
                     new Date(b.date) - new Date(a.date)
                 )

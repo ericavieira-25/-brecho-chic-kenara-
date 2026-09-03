@@ -417,6 +417,38 @@ app.delete("/api/users", (req, res) => {
   res.status(204).end();
 });
 
+app.patch("/api/users", async (req, res) => {
+  try {
+    await ensureUsersTable();
+    const session = readSession(req);
+    if (!session) return res.status(401).json({ erro: "Autenticação necessária." });
+
+    const { phone, address, name } = req.body || {};
+    const fields = [];
+    const values = [];
+    let idx = 1;
+
+    if (name !== undefined) { fields.push(`name = $${idx++}`); values.push(String(name).trim()); }
+    if (phone !== undefined) { fields.push(`phone = $${idx++}`); values.push(phone || null); }
+    if (address !== undefined) { fields.push(`address = $${idx++}`); values.push(address || null); }
+
+    if (fields.length === 0) {
+      return res.status(400).json({ erro: "Nenhum campo para atualizar." });
+    }
+
+    values.push(session.id);
+    const result = await pool.query(
+      `UPDATE users SET ${fields.join(", ")} WHERE id = $${idx} RETURNING id, name, email, role, supplier_id, avatar, phone, address, created_at`,
+      values
+    );
+    if (!result.rows[0]) return res.status(404).json({ erro: "Usuário não encontrado." });
+    res.status(200).json({ user: publicUser(result.rows[0]) });
+  } catch (err) {
+    console.error(err);
+    res.status(503).json({ erro: "Não foi possível atualizar o perfil." });
+  }
+});
+
 app.get("/api/users", async (req, res) => {
   try {
     await ensureUsersTable();

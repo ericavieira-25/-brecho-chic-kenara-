@@ -1,8 +1,9 @@
 import { Navigate, Link, useNavigate, useParams } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import {
   getOrderById,
+  fetchOrderById,
   cancelOrder,
   updatePaymentMethod,
 } from '../../data/orderService.js';
@@ -20,6 +21,15 @@ export default function Payment() {
   const [selectedMethod, setSelectedMethod] = useState(
     order?.paymentMethod || ''
   );
+
+  useEffect(() => {
+    fetchOrderById(orderId).then((fetched) => {
+      if (fetched) {
+        setOrder(fetched);
+        setSelectedMethod(fetched.paymentMethod || '');
+      }
+    });
+  }, [orderId]);
 
   if (!user) {
     return <Navigate to="/login" replace />;

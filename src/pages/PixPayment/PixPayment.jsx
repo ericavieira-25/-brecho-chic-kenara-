@@ -1,8 +1,9 @@
 import { Navigate, Link, useNavigate, useParams } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import {
   getOrderById,
+  fetchOrderById,
   confirmPayment,
 } from '../../data/orderService.js';
 import { formatPrice } from '../../utils/formatters';
@@ -16,6 +17,12 @@ export default function PixPayment() {
 
   const [order, setOrder] = useState(() => getOrderById(orderId));
   const [processing, setProcessing] = useState(false);
+
+  useEffect(() => {
+    fetchOrderById(orderId).then((fetched) => {
+      if (fetched) setOrder(fetched);
+    });
+  }, [orderId]);
 
   if (!user) {
     return <Navigate to="/login" replace />;

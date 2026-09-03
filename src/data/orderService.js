@@ -118,12 +118,22 @@ function saveOrder(order) {
   }
 }
 
+function getCsrfToken() {
+  const cookie = document.cookie
+    .split('; ')
+    .find((c) => c.startsWith('kenara_csrf='));
+  return cookie ? cookie.split('=').slice(1).join('=') : null;
+}
+
 async function requestOrders(path, options = {}) {
+  const method = (options.method || 'GET').toUpperCase();
+  const csrfToken = method !== 'GET' ? getCsrfToken() : null;
   const response = await fetch(`/api/orders${path}`, {
     ...options,
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
+      ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
       ...(options.headers || {}),
     },
   });
