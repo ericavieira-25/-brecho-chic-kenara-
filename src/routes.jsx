@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
-import Payment from "./pages/payment/Payment.jsx";
+import Payment from './pages/payment/Payment.jsx';
 import PixPayment from './pages/PixPayment/PixPayment';
 
 import Layout from './components/layout/Layout/Layout';
@@ -14,7 +14,7 @@ import Register from './pages/Register/Register';
 import Profile from './pages/Profile/Profile';
 import Orders from './pages/Orders/Orders';
 import OrderDetails from './pages/OrderDetails/OrderDetails';
-import AddProduct from "./pages/AddProduct/AddProduct.jsx";
+import AddProduct from './pages/AddProduct/AddProduct.jsx';
 import Confirmation from './pages/Confirmation/Confirmation';
 
 import SupplierPayments from './pages/SupplierPayments/SupplierPayments.jsx';
@@ -43,79 +43,61 @@ export default function AppRoutes() {
       <Routes>
         <Route element={<Layout />}>
 
-          {/* =========================================
-              ROTAS PRINCIPAIS
-          ========================================= */}
+          {/* ROTAS PRINCIPAIS */}
 
           <Route path="/" element={<Home />} />
-
           <Route path="/catalogo" element={<Catalog />} />
-
           <Route path="/produto/:id" element={<ProductDetail />} />
-
           <Route path="/favoritos" element={<Favorites />} />
-
           <Route path="/carrinho" element={<Cart />} />
 
-          {/* Login normal da loja */}
           <Route path="/login" element={<Login />} />
-
-          {/* Login exclusivo da administração */}
           <Route path="/admin/login" element={<AdminLogin />} />
-
           <Route path="/cadastro" element={<Register />} />
-
           <Route path="/perfil" element={<Profile />} />
-
           <Route path="/pedidos" element={<Orders />} />
 
           <Route
             path="/pedidos/:orderId"
             element={<OrderDetails />}
           />
-<Route
-  path="/admin/produtos/novo"
-  element={
-    <ProtectedRoute
-      allowedRoles={[USER_ROLES.ADMIN]}
-      redirectTo="/admin/login"
-    >
-      <AddProduct />
-    </ProtectedRoute>
-  }
-/>
-```
 
+          {/* ADMIN - NOVO PRODUTO */}
+
+          <Route
+            path="/admin/produtos/novo"
+            element={
+              <ProtectedRoute
+                allowedRoles={[USER_ROLES.ADMIN]}
+                redirectTo="/admin/login"
+              >
+                <AddProduct />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* CONFIRMAÇÃO */}
 
           <Route
             path="/confirmacao"
             element={<Confirmation />}
           />
 
-
-          {/* =========================================
-              PAGAMENTO PIX
-          ========================================= */}
+          {/* PAGAMENTO PIX */}
 
           <Route
             path="/pagamento/pix/:orderId"
             element={<PixPayment />}
           />
 
-
-          {/* =========================================
-              PAGAMENTO PRINCIPAL
-          ========================================= */}
+          {/* PAGAMENTO PRINCIPAL */}
 
           <Route
             path="/pagamento/:orderId"
             element={<Payment />}
           />
 
-
-          {/* =========================================
-              ÁREA ADMINISTRATIVA
-          ========================================= */}
+          {/* ÁREA ADMINISTRATIVA */}
 
           <Route
             path="/admin"
@@ -176,22 +158,20 @@ export default function AppRoutes() {
               </ProtectedRoute>
             }
           />
+
           <Route
-  path="/admin/produtos"
-  element={
-    <ProtectedRoute
-      allowedRoles={[USER_ROLES.ADMIN]}
-      redirectTo="/admin/login"
-    >
-      <AdminProducts />
-    </ProtectedRoute>
-  }
-/>
+            path="/admin/produtos"
+            element={
+              <ProtectedRoute
+                allowedRoles={[USER_ROLES.ADMIN]}
+                redirectTo="/admin/login"
+              >
+                <AdminProducts />
+              </ProtectedRoute>
+            }
+          />
 
-
-          {/* =========================================
-              ÁREA DA FORNECEDORA
-          ========================================= */}
+          {/* ÁREA DA FORNECEDORA */}
 
           <Route
             path="/fornecedor"
@@ -205,20 +185,14 @@ export default function AppRoutes() {
             }
           />
 
-
-          {/* =========================================
-              ACESSO NEGADO
-          ========================================= */}
+          {/* ACESSO NEGADO */}
 
           <Route
             path="/403"
             element={<AccessDenied />}
           />
 
-
-          {/* =========================================
-              PÁGINA 404
-          ========================================= */}
+          {/* PÁGINA 404 */}
 
           <Route
             path="*"
