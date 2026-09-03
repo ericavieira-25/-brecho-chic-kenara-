@@ -56,12 +56,6 @@ export default function AdminProducts() {
             </p>
           </div>
 
-          <Link
-            to="/adicionar-produto"
-            className={styles.addButton}
-          >
-            + Adicionar produto
-          </Link>
         </div>
 
 
