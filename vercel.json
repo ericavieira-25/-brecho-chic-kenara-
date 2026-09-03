@@ -1,11 +1,6 @@
 {
   "version": 2,
   "rewrites": [
-    { "source": "/api/products",        "destination": "/api/products"        },
-    { "source": "/api/users",           "destination": "/api/users"           },
-    { "source": "/api/orders",          "destination": "/api/orders"          },
-    { "source": "/api/auth",            "destination": "/api/auth"            },
-    { "source": "/api/update-admin-pw", "destination": "/api/update-admin-pw" },
-    { "source": "/(.*)",                "destination": "/index.html"          }
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }
