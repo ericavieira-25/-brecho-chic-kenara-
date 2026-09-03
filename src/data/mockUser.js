@@ -34,7 +34,7 @@ export const demoUsers = [
     id: 'user-demo-admin',
     name: 'Administradora Kenara',
     email: 'admin@brecho.com',
-    password: '123456',
+    password: 'kenara25@',
     role: USER_ROLES.ADMIN,
     avatar: 'https://picsum.photos/seed/user-admin/200/200',
     phone: '(11) 97777-1111',

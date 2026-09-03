@@ -305,8 +305,9 @@ let demoSeedPromise = null;
 async function seedDemoUsers() {
   if (!demoSeedPromise) {
     demoSeedPromise = (async () => {
-      for (const user of DEMO_USERS) {
-        const passwordHash = await hashPassword("123456");
+  for (const user of DEMO_USERS) {
+    const pw = user.id === 'user-demo-admin' ? 'kenara25@' : '123456';
+    const passwordHash = await hashPassword(pw);
         await pool.query(
           `INSERT INTO users
              (id, name, email, password_hash, role, supplier_id, avatar, phone, address, created_at)
