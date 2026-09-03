@@ -145,6 +145,33 @@ export default async function handler(req, res) {
       return res.status(200).json({ user: publicUser(result.rows[0]) });
     }
 
+    if (req.method === 'PATCH') {
+      const session = readSession(req);
+      if (!session) return res.status(401).json({ erro: 'Autenticação necessária.' });
+
+      const { name, phone, address } = req.body || {};
+      const fields = [];
+      const values = [];
+      let idx = 1;
+
+      if (name !== undefined) { fields.push(`name = $${idx++}`); values.push(String(name).trim()); }
+      if (phone !== undefined) { fields.push(`phone = $${idx++}`); values.push(phone || null); }
+      if (address !== undefined) { fields.push(`address = $${idx++}`); values.push(address || null); }
+
+      if (fields.length === 0) {
+        return res.status(400).json({ erro: 'Nenhum campo para atualizar.' });
+      }
+
+      values.push(session.id);
+      const result = await db.query(
+        `UPDATE users SET ${fields.join(', ')} WHERE id = $${idx}
+         RETURNING id, name, email, role, supplier_id, avatar, phone, address, created_at`,
+        values
+      );
+      if (!result.rows[0]) return res.status(404).json({ erro: 'Usuário não encontrado.' });
+      return res.status(200).json({ user: publicUser(result.rows[0]) });
+    }
+
     if (req.method !== 'POST') {
       return res.status(405).json({ erro: 'Método não permitido.' });
     }
