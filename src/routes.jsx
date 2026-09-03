@@ -14,7 +14,7 @@ import Register from './pages/Register/Register';
 import Profile from './pages/Profile/Profile';
 import Orders from './pages/Orders/Orders';
 import OrderDetails from './pages/OrderDetails/OrderDetails';
-import AddProduct from './pages/AddProduct/AddProduct';
+import AddProduct from "./pages/AddProduct/AddProduct.jsx";
 import Confirmation from './pages/Confirmation/Confirmation';
 
 import SupplierPayments from './pages/SupplierPayments/SupplierPayments.jsx';
@@ -73,18 +73,19 @@ export default function AppRoutes() {
             path="/pedidos/:orderId"
             element={<OrderDetails />}
           />
+<Route
+  path="/admin/produtos/novo"
+  element={
+    <ProtectedRoute
+      allowedRoles={[USER_ROLES.ADMIN]}
+      redirectTo="/admin/login"
+    >
+      <AddProduct />
+    </ProtectedRoute>
+  }
+/>
+```
 
-          <Route
-            path="/adicionar-produto"
-            element={
-              <ProtectedRoute
-                allowedRoles={[USER_ROLES.ADMIN]}
-                redirectTo="/"
-              >
-                <AddProduct />
-              </ProtectedRoute>
-            }
-          />
 
           <Route
             path="/confirmacao"

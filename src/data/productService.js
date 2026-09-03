@@ -7,8 +7,9 @@
 
 import { getSupplierById, getSupplierByName } from './suppliers.js';
 import { isProductAvailable } from './productAvailabilityService.js';
+import { products as localProducts } from './products.js';
 
-const API_URL = '/api/products';
+const API_URL = 'https://server-lac-five-32.vercel.app/api/products';
 async function request(url, options = {}) {
   const csrfCookie = document.cookie
     .split('; ')
@@ -128,7 +129,7 @@ export async function getAllProducts() {
       error
     );
 
-    return [];
+    return localProducts.map(enrichProduct);
   }
 
 }

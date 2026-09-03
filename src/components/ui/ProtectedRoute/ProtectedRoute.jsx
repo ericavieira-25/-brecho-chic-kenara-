@@ -54,7 +54,15 @@ export function ProtectedRoute({
   accessDeniedPath = '/403',
   fallback = null,
 }) {
-  const { isAuth, hasAnyRole } = useGuard();
+const { isAuth, hasAnyRole, user } = useGuard();
+
+console.log('🔐 PROTECTED ROUTE:', {
+  user,
+  role: user?.role,
+  allowedRoles,
+  isAuth,
+  acesso: hasAnyRole(allowedRoles),
+});
 
   // Não autenticado: redirecionar para login
   if (!isAuth) {
