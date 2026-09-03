@@ -1,9 +1,11 @@
-import { useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { useAuth } from '../../context/AuthContext';
 import { categories, sizes, conditions } from '../../data/categories';
+import { suppliers } from '../../data/suppliers';
 import { addProduct } from '../../data/productService.js';
+import { USER_ROLES } from '../../data/roles.js';
 
 import Input from '../../components/ui/Input/Input';
 import Button from '../../components/ui/Button/Button';
@@ -12,517 +14,606 @@ import styles from './AddProduct.module.css';
 
 const initialForm = {
   name: '',
+  description: '',
   category: '',
   size: '',
+  brand: '',
   condition: '',
   price: '',
   originalPrice: '',
-  brand: '',
-  description: '',
-  photo: null,
+  tags: '',
+  supplierId: '',
+  available: true,
 };
+
+function getOptionValue(option) {
+  if (typeof option === 'string') return option;
+  return option?.value ?? option?.id ?? '';
+}
+
+function getOptionLabel(option) {
+  if (typeof option === 'string') return option;
+  return option?.label ?? option?.name ?? option?.value ?? '';
+}
+
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    if (!file) {
+      resolve('');
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () =>
+      reject(new Error('Não foi possível ler a imagem.'));
+
+    reader.readAsDataURL(file);
+  });
+}
 
 export default function AddProduct() {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const [form, setForm] = useState(initialForm);
-  const [errors, setErrors] = useState({});
+  const [imagePreview, setImagePreview] = useState('');
+  const [imageFile, setImageFile] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState('');
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
-  if (!user) {
+  const activeSuppliers = useMemo(
+    () => suppliers.filter((supplier) => supplier.status === 'active'),
+    []
+  );
+
+  const isAdmin = user?.role === USER_ROLES.ADMIN;
+
+  if (!isAdmin) {
     return (
-      <Navigate
-        to="/login?redirect=/adicionar-produto"
-        replace
-      />
+      <main className={styles.page}>
+        <section className={styles.container}>
+          <div className={styles.card}>
+            <h1>Acesso administrativo não autorizado.</h1>
+          </div>
+        </section>
+      </main>
     );
   }
 
-  function validate() {
-    const errs = {};
-
-    if (!form.name.trim()) {
-      errs.name = 'Nome obrigatório';
-    }
-
-    if (!form.category) {
-      errs.category = 'Categoria obrigatória';
-    }
-
-    if (!form.size) {
-      errs.size = 'Tamanho obrigatório';
-    }
-
-    if (!form.condition) {
-      errs.condition = 'Condição obrigatória';
-    }
-
-    if (!form.price) {
-      errs.price = 'Preço obrigatório';
-    } else if (
-      Number.isNaN(Number(form.price)) ||
-      Number(form.price) <= 0
-    ) {
-      errs.price = 'Preço inválido';
-    }
-
-    if (!form.description.trim()) {
-      errs.description = 'Descrição obrigatória';
-    }
-
-    return errs;
-  }
-
   function handleChange(event) {
-    const { name, value } = event.target;
+    const { name, value, type, checked } = event.target;
 
     setForm((current) => ({
       ...current,
-      [name]: value,
+      [name]: type === 'checkbox' ? checked : value,
     }));
+
+    setError('');
+    setSuccess('');
   }
 
-  function handleFile(event) {
+  async function handleImageChange(event) {
     const file = event.target.files?.[0];
 
     if (!file) {
+      setImageFile(null);
+      setImagePreview('');
       return;
     }
 
     if (!file.type.startsWith('image/')) {
-      setErrors((current) => ({
-        ...current,
-        photo: 'Selecione um arquivo de imagem válido.',
-      }));
+      setError('Selecione um arquivo de imagem válido.');
+      event.target.value = '';
       return;
     }
 
-    setErrors((current) => ({
-      ...current,
-      photo: '',
-    }));
+    if (file.size > 5 * 1024 * 1024) {
+      setError('A imagem deve ter no máximo 5 MB.');
+      event.target.value = '';
+      return;
+    }
 
-    setForm((current) => ({
-      ...current,
-      photo: file,
-    }));
+    try {
+      const dataUrl = await readFileAsDataUrl(file);
 
-    const url = URL.createObjectURL(file);
-    setPreviewUrl(url);
+      setImageFile(file);
+      setImagePreview(dataUrl);
+      setError('');
+    } catch {
+      setError('Não foi possível carregar a imagem.');
+    }
+  }
+
+  function validateForm() {
+    if (!form.name.trim()) {
+      return 'Digite o nome da peça.';
+    }
+
+    if (!form.category) {
+      return 'Selecione uma categoria.';
+    }
+
+    if (!form.size) {
+      return 'Selecione o tamanho.';
+    }
+
+    if (!form.condition) {
+      return 'Selecione o estado da peça.';
+    }
+
+    if (!form.price || Number(form.price) < 0) {
+      return 'Digite um preço válido.';
+    }
+
+    if (
+      form.originalPrice &&
+      Number(form.originalPrice) < Number(form.price)
+    ) {
+      return 'O preço original não pode ser menor que o preço da peça.';
+    }
+
+    if (!form.supplierId) {
+      return 'Selecione a fornecedora da peça.';
+    }
+
+    return '';
   }
 
   async function handleSubmit(event) {
     event.preventDefault();
 
-    const validationErrors = validate();
+    setError('');
+    setSuccess('');
 
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      setSuccess(false);
+    const validationError = validateForm();
+
+    if (validationError) {
+      setError(validationError);
       return;
     }
 
-    setErrors({});
+    const supplier = activeSuppliers.find(
+      (item) => item.id === form.supplierId
+    );
+
+    if (!supplier) {
+      setError('A fornecedora selecionada não foi encontrada.');
+      return;
+    }
+
     setLoading(true);
-    setSuccess(false);
 
     try {
-      /*
-       * Como estamos trabalhando com armazenamento local,
-       * a foto é convertida para uma URL de dados.
-       */
-      let photoData = '';
-
-      if (form.photo) {
-        photoData = await readFileAsDataUrl(form.photo);
-      }
-
-      const categoryData = categories.find(
-        (category) => category.id === form.category
+      const categoryObject = categories.find(
+        (item) => getOptionValue(item) === form.category
       );
 
-      const conditionData = conditions.find(
-        (condition) => condition.id === form.condition
+      const conditionObject = conditions.find(
+        (item) => getOptionValue(item) === form.condition
       );
+
+      const tags = form.tags
+        .split(',')
+        .map((tag) => tag.trim())
+        .filter(Boolean);
 
       const product = {
         name: form.name.trim(),
+        description: form.description.trim(),
         category: form.category,
-        categoryName: categoryData?.name || form.category,
+        categoryName:
+          getOptionLabel(categoryObject) || form.category,
         size: form.size,
+        brand: form.brand.trim(),
         condition: form.condition,
-        conditionLabel: conditionData?.label || form.condition,
+        conditionLabel:
+          getOptionLabel(conditionObject) || form.condition,
         price: Number(form.price),
         originalPrice: form.originalPrice
           ? Number(form.originalPrice)
           : null,
-        brand: form.brand.trim(),
-        description: form.description.trim(),
-        photo: photoData,
-        supplierId: user.supplierId || null,
-        supplierName: user.name || 'Administradora',
-        createdBy: user.id,
+        tags,
+        photo: imagePreview || null,
+        images: imagePreview ? [imagePreview] : [],
+        supplierId: supplier.id,
+        supplierName: supplier.name,
+        createdBy:
+          user?.email || user?.name || 'Administradora',
+        createdByRole: USER_ROLES.ADMIN,
+        available: Boolean(form.available),
+        status: form.available
+          ? 'disponivel'
+          : 'indisponivel',
+        createdAt: new Date().toISOString(),
       };
 
       await addProduct(product);
 
-      setSuccess(true);
-      setForm(initialForm);
-      setPreviewUrl('');
-    } catch (error) {
-      console.error('Erro ao cadastrar produto:', error);
+      setSuccess('Peça cadastrada com sucesso!');
 
-      setErrors({
-        submit: 'Não foi possível cadastrar a peça. Tente novamente.',
-      });
+      setForm(initialForm);
+      setImageFile(null);
+      setImagePreview('');
+
+      const imageInput =
+        document.getElementById('product-image');
+
+      if (imageInput) {
+        imageInput.value = '';
+      }
+    } catch (submitError) {
+      console.error(
+        'Erro ao cadastrar peça:',
+        submitError
+      );
+
+      setError(
+        submitError?.message ||
+          'Não foi possível cadastrar a peça. Tente novamente.'
+      );
     } finally {
       setLoading(false);
     }
   }
 
+  function handleCancel() {
+    navigate('/admin/produtos');
+  }
+
   return (
-    <div className={styles.page}>
-      <div className={styles.inner}>
+    <main className={styles.page}>
+      <section className={styles.container}>
+        <div className={styles.header}>
+          <div>
+            <h1>Cadastrar peça</h1>
 
-        <h1 className={styles.title}>
-          Vender minha peça
-        </h1>
+            <p>
+              Cadastre uma peça para o catálogo e vincule-a à
+              sua fornecedora.
+            </p>
+          </div>
 
-        <p className={styles.subtitle}>
-          Preencha as informações da peça que deseja vender
-        </p>
+          <Button
+            type="button"
+            onClick={handleCancel}
+            className={styles.cancelButton}
+          >
+            Voltar
+          </Button>
+        </div>
 
-        {success && (
-          <div className={styles.successBanner}>
-            <span>
-              ✅ Peça cadastrada com sucesso!
-              Ela foi salva no sistema.
-            </span>
-
-            <button
-              type="button"
-              onClick={() => setSuccess(false)}
-              className={styles.dismissBtn}
-              aria-label="Fechar mensagem"
-            >
-              ✕
-            </button>
+        {error && (
+          <div className={styles.error} role="alert">
+            {error}
           </div>
         )}
 
-        {errors.submit && (
-          <div className={styles.successBanner}>
-            ⚠️ {errors.submit}
+        {success && (
+          <div className={styles.success} role="status">
+            {success}
           </div>
         )}
 
         <form
           className={styles.form}
           onSubmit={handleSubmit}
-          noValidate
         >
+          <section className={styles.card}>
+            <h2>Informações da peça</h2>
 
-          {/* FOTO */}
-          <div className={styles.photoSection}>
-            <label
-              className={styles.photoLabel}
-              htmlFor="photo"
-            >
-              {previewUrl ? (
-                <img
-                  src={previewUrl}
-                  alt="Pré-visualização da peça"
-                  className={styles.photoPreview}
+            <div className={styles.grid}>
+              <div className={styles.fullWidth}>
+                <Input
+                  label="Nome da peça"
+                  name="name"
+                  value={form.name}
+                  onChange={handleChange}
+                  placeholder="Ex.: Vestido floral vintage"
+                  required
                 />
-              ) : (
-                <div className={styles.photoPlaceholder}>
-                  <span className={styles.photoIcon}>
-                    📷
-                  </span>
+              </div>
 
-                  <span>
-                    Clique para adicionar foto
-                  </span>
-                </div>
-              )}
-            </label>
+              <div className={styles.fullWidth}>
+                <label
+                  className={styles.label}
+                  htmlFor="description"
+                >
+                  Descrição
+                </label>
 
-            <input
-              type="file"
-              id="photo"
-              name="photo"
-              accept="image/*"
-              onChange={handleFile}
-              className={styles.fileInput}
-            />
+                <textarea
+                  id="description"
+                  name="description"
+                  value={form.description}
+                  onChange={handleChange}
+                  placeholder="Descreva a peça, detalhes, medidas, conservação..."
+                  rows={5}
+                  className={styles.textarea}
+                />
+              </div>
 
-            {errors.photo && (
-              <p className={styles.fieldError}>
-                {errors.photo}
+              <div>
+                <label
+                  className={styles.label}
+                  htmlFor="category"
+                >
+                  Categoria *
+                </label>
+
+                <select
+                  id="category"
+                  name="category"
+                  value={form.category}
+                  onChange={handleChange}
+                  className={styles.select}
+                  required
+                >
+                  <option value="">Selecione</option>
+
+                  {categories.map((category) => {
+                    const value = getOptionValue(category);
+                    const label = getOptionLabel(category);
+
+                    return (
+                      <option
+                        key={value}
+                        value={value}
+                      >
+                        {label}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+
+              <div>
+                <label
+                  className={styles.label}
+                  htmlFor="size"
+                >
+                  Tamanho *
+                </label>
+
+                <select
+                  id="size"
+                  name="size"
+                  value={form.size}
+                  onChange={handleChange}
+                  className={styles.select}
+                  required
+                >
+                  <option value="">Selecione</option>
+
+                  {sizes.map((size) => {
+                    const value = getOptionValue(size);
+                    const label = getOptionLabel(size);
+
+                    return (
+                      <option
+                        key={value}
+                        value={value}
+                      >
+                        {label}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+
+              <div>
+                <label
+                  className={styles.label}
+                  htmlFor="condition"
+                >
+                  Estado da peça *
+                </label>
+
+                <select
+                  id="condition"
+                  name="condition"
+                  value={form.condition}
+                  onChange={handleChange}
+                  className={styles.select}
+                  required
+                >
+                  <option value="">Selecione</option>
+
+                  {conditions.map((condition) => {
+                    const value = getOptionValue(condition);
+                    const label = getOptionLabel(condition);
+
+                    return (
+                      <option
+                        key={value}
+                        value={value}
+                      >
+                        {label}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+
+              <div>
+                <Input
+                  label="Marca"
+                  name="brand"
+                  value={form.brand}
+                  onChange={handleChange}
+                  placeholder="Ex.: Zara"
+                />
+              </div>
+            </div>
+          </section>
+
+          <section className={styles.card}>
+            <h2>Valores</h2>
+
+            <div className={styles.grid}>
+              <div>
+                <Input
+                  label="Preço de venda (R$)"
+                  name="price"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={form.price}
+                  onChange={handleChange}
+                  placeholder="0,00"
+                  required
+                />
+              </div>
+
+              <div>
+                <Input
+                  label="Preço original (R$)"
+                  name="originalPrice"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={form.originalPrice}
+                  onChange={handleChange}
+                  placeholder="Opcional"
+                />
+              </div>
+
+              <div className={styles.fullWidth}>
+                <Input
+                  label="Tags"
+                  name="tags"
+                  value={form.tags}
+                  onChange={handleChange}
+                  placeholder="Ex.: vintage, floral, verão"
+                />
+
+                <small className={styles.help}>
+                  Separe as tags por vírgulas.
+                </small>
+              </div>
+            </div>
+          </section>
+
+          <section className={styles.card}>
+            <h2>Fornecedora</h2>
+
+            <div>
+              <label
+                className={styles.label}
+                htmlFor="supplierId"
+              >
+                Fornecedora da peça *
+              </label>
+
+              <select
+                id="supplierId"
+                name="supplierId"
+                value={form.supplierId}
+                onChange={handleChange}
+                className={styles.select}
+                required
+              >
+                <option value="">
+                  Selecione uma fornecedora
+                </option>
+
+                {activeSuppliers.map((supplier) => (
+                  <option
+                    key={supplier.id}
+                    value={supplier.id}
+                  >
+                    {supplier.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {form.supplierId && (
+              <p className={styles.supplierInfo}>
+                Esta peça ficará vinculada à fornecedora
+                selecionada.
               </p>
             )}
-          </div>
+          </section>
 
-
-          {/* NOME + CATEGORIA */}
-          <div className={styles.grid2}>
-
-            <Input
-              label="Nome da peça"
-              id="name"
-              name="name"
-              value={form.name}
-              onChange={handleChange}
-              error={errors.name}
-              placeholder="Ex: Vestido Floral Azul"
-            />
-
-            <div className={styles.field}>
-              <label
-                className={styles.label}
-                htmlFor="category"
-              >
-                Categoria
-              </label>
-
-              <select
-                id="category"
-                name="category"
-                className={[
-                  styles.select,
-                  errors.category
-                    ? styles.selectError
-                    : '',
-                ].join(' ')}
-                value={form.category}
-                onChange={handleChange}
-              >
-                <option value="">
-                  Selecionar...
-                </option>
-
-                {categories.map((category) => (
-                  <option
-                    key={category.id}
-                    value={category.id}
-                  >
-                    {category.name}
-                  </option>
-                ))}
-              </select>
-
-              {errors.category && (
-                <p className={styles.fieldError}>
-                  {errors.category}
-                </p>
-              )}
-            </div>
-
-          </div>
-
-
-          {/* TAMANHO + CONDIÇÃO */}
-          <div className={styles.grid2}>
-
-            <div className={styles.field}>
-              <label
-                className={styles.label}
-                htmlFor="size"
-              >
-                Tamanho
-              </label>
-
-              <select
-                id="size"
-                name="size"
-                className={[
-                  styles.select,
-                  errors.size
-                    ? styles.selectError
-                    : '',
-                ].join(' ')}
-                value={form.size}
-                onChange={handleChange}
-              >
-                <option value="">
-                  Selecionar...
-                </option>
-
-                {sizes.map((size) => (
-                  <option
-                    key={size}
-                    value={size}
-                  >
-                    {size}
-                  </option>
-                ))}
-              </select>
-
-              {errors.size && (
-                <p className={styles.fieldError}>
-                  {errors.size}
-                </p>
-              )}
-            </div>
-
-
-            <div className={styles.field}>
-              <label
-                className={styles.label}
-                htmlFor="condition"
-              >
-                Condição
-              </label>
-
-              <select
-                id="condition"
-                name="condition"
-                className={[
-                  styles.select,
-                  errors.condition
-                    ? styles.selectError
-                    : '',
-                ].join(' ')}
-                value={form.condition}
-                onChange={handleChange}
-              >
-                <option value="">
-                  Selecionar...
-                </option>
-
-                {conditions.map((condition) => (
-                  <option
-                    key={condition.id}
-                    value={condition.id}
-                  >
-                    {condition.label}
-                  </option>
-                ))}
-              </select>
-
-              {errors.condition && (
-                <p className={styles.fieldError}>
-                  {errors.condition}
-                </p>
-              )}
-            </div>
-
-          </div>
-
-
-          {/* PREÇOS */}
-          <div className={styles.grid2}>
-
-            <Input
-              label="Preço de venda (R$)"
-              id="price"
-              name="price"
-              type="number"
-              min="0"
-              step="0.01"
-              value={form.price}
-              onChange={handleChange}
-              error={errors.price}
-              placeholder="Ex: 89.90"
-            />
-
-            <Input
-              label="Preço original (R$) — opcional"
-              id="originalPrice"
-              name="originalPrice"
-              type="number"
-              min="0"
-              step="0.01"
-              value={form.originalPrice}
-              onChange={handleChange}
-              placeholder="Ex: 250.00"
-            />
-
-          </div>
-
-
-          {/* MARCA */}
-          <Input
-            label="Marca"
-            id="brand"
-            name="brand"
-            value={form.brand}
-            onChange={handleChange}
-            placeholder="Ex: Zara, Farm, Levi's..."
-          />
-
-
-          {/* DESCRIÇÃO */}
-          <div className={styles.field}>
+          <section className={styles.card}>
+            <h2>Imagem</h2>
 
             <label
               className={styles.label}
-              htmlFor="description"
+              htmlFor="product-image"
             >
-              Descrição
+              Foto da peça
             </label>
 
-            <textarea
-              id="description"
-              name="description"
-              className={[
-                styles.textarea,
-                errors.description
-                  ? styles.selectError
-                  : '',
-              ].join(' ')}
-              value={form.description}
-              onChange={handleChange}
-              placeholder="Descreva a peça: tecido, estado, detalhes especiais..."
-              rows={4}
+            <input
+              id="product-image"
+              name="image"
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className={styles.fileInput}
             />
 
-            {errors.description && (
-              <p className={styles.fieldError}>
-                {errors.description}
-              </p>
+            <small className={styles.help}>
+              Formatos de imagem aceitos. Tamanho máximo: 5 MB.
+            </small>
+
+            {imagePreview && (
+              <div className={styles.preview}>
+                <img
+                  src={imagePreview}
+                  alt="Pré-visualização da peça"
+                  className={styles.previewImage}
+                />
+
+                {imageFile && (
+                  <span className={styles.fileName}>
+                    {imageFile.name}
+                  </span>
+                )}
+              </div>
             )}
+          </section>
 
+          <section className={styles.card}>
+            <h2>Disponibilidade</h2>
+
+            <label className={styles.checkboxLabel}>
+              <input
+                type="checkbox"
+                name="available"
+                checked={form.available}
+                onChange={handleChange}
+              />
+
+              <span>Peça disponível para venda</span>
+            </label>
+          </section>
+
+          <div className={styles.actions}>
+            <Button
+              type="button"
+              onClick={handleCancel}
+              disabled={loading}
+              className={styles.secondaryButton}
+            >
+              Cancelar
+            </Button>
+
+            <Button
+              type="submit"
+              loading={loading}
+              disabled={loading}
+              className={styles.submitButton}
+            >
+              {loading ? 'Cadastrando...' : 'Cadastrar peça'}
+            </Button>
           </div>
-
-
-          {/* BOTÃO */}
-          <Button
-            type="submit"
-            variant="primary"
-            size="lg"
-            loading={loading}
-            className={styles.submitBtn}
-          >
-            Publicar peça
-          </Button>
-
         </form>
-
-      </div>
-    </div>
+      </section>
+    </main>
   );
-}
-
-
-/*
- * Converte uma imagem selecionada pelo usuário
- * para uma string que pode ser salva no localStorage.
- */
-function readFileAsDataUrl(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-
-    reader.onload = () => {
-      resolve(reader.result);
-    };
-
-    reader.onerror = () => {
-      reject(new Error('Não foi possível ler a imagem.'));
-    };
-
-    reader.readAsDataURL(file);
-  });
 }
