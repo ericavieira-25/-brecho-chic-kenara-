@@ -5,9 +5,9 @@
 .page {
   min-height: calc(100vh - 80px);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 3rem 1.5rem;
+  padding: 3rem 1.5rem 4rem;
   background: var(--color-bg);
 }
 
@@ -17,38 +17,54 @@
 
 .card {
   width: 100%;
-  max-width: 650px;
+  max-width: 560px;
   box-sizing: border-box;
-  padding: 3rem;
-  text-align: center;
-
+  padding: 2.5rem 2rem;
   background: var(--color-surface);
   border: 1px solid var(--color-border-subtle);
   border-radius: 24px;
-
-  box-shadow: 0 20px 50px rgba(70, 45, 25, 0.12);
+  box-shadow: 0 20px 50px rgba(70, 45, 25, 0.10);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
-.icon {
-  font-size: 3.5rem;
-  line-height: 1;
-  margin-bottom: 1rem;
+/* =========================================================
+   CABEÇALHO
+   ========================================================= */
+
+.header {
+  text-align: center;
+}
+
+.pixLogo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 1rem;
+  border-radius: 16px;
+  background: #32BCAD;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  box-shadow: 0 4px 14px rgba(50, 188, 173, 0.35);
 }
 
 .title {
-  margin: 0 0 1rem;
-
+  margin: 0 0 0.5rem;
   font-family: var(--font-primary);
-  font-size: var(--text-3xl);
+  font-size: var(--text-2xl);
   letter-spacing: -0.02em;
   color: var(--color-text);
 }
 
 .text {
-  max-width: 500px;
-  margin: 0 auto 2rem;
-
+  margin: 0;
   color: var(--color-text-muted);
+  font-size: var(--text-sm);
   line-height: 1.6;
 }
 
@@ -59,188 +75,220 @@
 .valueBox {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-
-  margin-bottom: 1.5rem;
+  align-items: center;
+  gap: 0.25rem;
   padding: 1.25rem;
-
-  background: var(--color-primary-xlight);
-  border: 1px solid var(--color-primary-light);
+  background: linear-gradient(135deg, #f9f4ef 0%, #fdf6f0 100%);
+  border: 1.5px solid var(--color-primary-light);
   border-radius: 16px;
+  text-align: center;
 }
 
 .valueBox span {
   color: var(--color-text-muted);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
 }
 
 .valueBox strong {
   color: var(--color-primary-dark);
   font-family: var(--font-primary);
-  font-size: 1.8rem;
+  font-size: 2rem;
+  line-height: 1.1;
+}
+
+.valueBox small {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
 }
 
 /* =========================================================
-   QR CODE
+   CARD DE DADOS DO PIX
    ========================================================= */
 
-.qrPlaceholder {
-  margin-bottom: 1.5rem;
-  padding: 1.5rem;
-
-  background: var(--color-surface);
-  border: 1px dashed var(--color-primary);
+.pixDataCard {
+  border: 1.5px solid var(--color-border);
   border-radius: 16px;
+  overflow: hidden;
 }
 
-.fakeQr {
-  width: 180px;
-  height: 180px;
-  margin: 0 auto 1rem;
+.pixDataRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
 
+.pixDataLabel {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.pixDataValue {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text);
+  text-align: right;
+}
+
+.pixKeyRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: #f0fdf9;
+}
+
+.pixKeyBox {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.pixKeyLabel {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  font-weight: 700;
+  color: #32BCAD;
+}
+
+.pixKeyValue {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: 0.03em;
+  word-break: break-all;
+}
+
+.copyBtn {
+  flex-shrink: 0;
+  padding: 0.55rem 1rem;
+  border: 1.5px solid #32BCAD;
+  border-radius: 10px;
+  background: transparent;
+  color: #32BCAD;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, transform 0.1s;
+  white-space: nowrap;
+}
+
+.copyBtn:hover {
+  background: #32BCAD;
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.copyBtnSuccess {
+  background: #32BCAD;
+  color: #fff;
+  border-color: #32BCAD;
+}
+
+/* =========================================================
+   PASSO A PASSO
+   ========================================================= */
+
+.instructions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.step {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  line-height: 1.5;
+}
+
+.stepNum {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 800;
   display: flex;
   align-items: center;
   justify-content: center;
-
-  background:
-    linear-gradient(45deg, #f5eee5 25%, transparent 25%),
-    linear-gradient(-45deg, #f5eee5 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #f5eee5 75%),
-    linear-gradient(-45deg, transparent 75%, #f5eee5 75%);
-
-  background-size: 28px 28px;
-  background-position:
-    0 0,
-    0 14px,
-    14px -14px,
-    -14px 0;
-
-  border: 8px solid var(--color-surface);
-  border-radius: 12px;
-
-  box-shadow: 0 5px 20px rgba(70, 45, 25, 0.08);
-
-  font-size: 1.4rem;
-  font-weight: var(--font-weight-bold);
-  color: var(--color-primary-dark);
-}
-
-.qrPlaceholder p {
-  margin: 0;
-
-  color: var(--color-text-muted);
-  font-size: var(--text-sm);
+  margin-top: 1px;
 }
 
 /* =========================================================
-   PIX COPIA E COLA
+   BOTÃO WHATSAPP
    ========================================================= */
 
-.pixCode {
-  margin-bottom: 1.5rem;
-  text-align: left;
-}
-
-.pixCode label {
-  display: block;
-  margin-bottom: 0.6rem;
-
-  color: var(--color-text);
-  font-size: var(--text-sm);
-  font-weight: var(--font-weight-semibold);
-}
-
-.codeRow {
+.whatsappBtn {
   display: flex;
-  align-items: stretch;
-  gap: 0.5rem;
-}
-
-.codeRow input {
-  flex: 1;
-  min-width: 0;
-  box-sizing: border-box;
-
-  padding: 0.8rem;
-
-  background: var(--color-surface);
-  border: 1.5px solid var(--color-border);
-  border-radius: 10px;
-
-  color: var(--color-text);
-  font-family: var(--font-body);
-  font-size: var(--text-sm);
-
-  outline: none;
-}
-
-.codeRow input:focus {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(184, 146, 106, 0.12);
-}
-
-.codeRow button {
-  flex-shrink: 0;
-
-  padding: 0.8rem 1rem;
-
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.9rem 1.25rem;
   border: none;
-  border-radius: 10px;
-
-  background: var(--color-primary);
+  border-radius: 14px;
+  background: #25D366;
   color: #fff;
-
-  font-family: var(--font-body);
-  font-size: var(--text-sm);
-  font-weight: var(--font-weight-semibold);
-
+  font-size: var(--text-base);
+  font-weight: 700;
+  text-decoration: none;
   cursor: pointer;
-
-  transition:
-    background var(--transition-fast),
-    transform var(--transition-fast),
-    box-shadow var(--transition-fast);
+  transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+  box-shadow: 0 4px 14px rgba(37, 211, 102, 0.30);
 }
 
-.codeRow button:hover {
-  background: var(--color-primary-dark);
-  transform: translateY(-1px);
-  box-shadow: 0 5px 14px rgba(70, 45, 25, 0.12);
+.whatsappBtn:hover {
+  background: #1ebe5d;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(37, 211, 102, 0.38);
 }
 
-.codeRow button:active {
+.whatsappBtn:active {
   transform: translateY(0);
 }
 
+.whatsappIcon {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
 /* =========================================================
-   INFORMAÇÃO / STATUS
+   AVISO / MENSAGEM FINAL
    ========================================================= */
 
-.info {
-  margin-bottom: 1.5rem;
-  padding: 1.25rem;
-
-  text-align: left;
-
-  background: var(--color-primary-xlight);
-  border: 1px solid var(--color-primary-light);
-  border-radius: 16px;
-}
-
-.info strong {
-  display: block;
-  margin-bottom: 0.5rem;
-
-  color: var(--color-primary-dark);
+.notice {
+  padding: 1rem 1.25rem;
+  background: #fff8f5;
+  border: 1px solid #fcd5b8;
+  border-radius: 12px;
   font-size: var(--text-sm);
-}
-
-.info p {
-  margin: 0;
-
   color: var(--color-text-muted);
   line-height: 1.5;
-  font-size: var(--text-sm);
+  text-align: center;
+}
+
+/* =========================================================
+   ÍCONE (telas de estado)
+   ========================================================= */
+
+.icon {
+  font-size: 3rem;
+  line-height: 1;
+  margin-bottom: 1rem;
+  text-align: center;
 }
 
 /* =========================================================
@@ -256,47 +304,44 @@
 }
 
 .actions > * {
-  min-width: 190px;
+  min-width: 160px;
 }
 
 /* =========================================================
    RESPONSIVIDADE
    ========================================================= */
 
-@media (max-width: 700px) {
+@media (max-width: 600px) {
   .page {
-    min-height: auto;
-    padding: 2rem 1rem;
+    padding: 1.5rem 1rem 3rem;
   }
 
   .card {
     padding: 2rem 1.25rem;
     border-radius: 20px;
-  }
-
-  .icon {
-    font-size: 3rem;
+    gap: 1.25rem;
   }
 
   .title {
-    font-size: var(--text-2xl);
+    font-size: var(--text-xl);
   }
 
-  .text {
-    font-size: var(--text-sm);
+  .valueBox strong {
+    font-size: 1.6rem;
   }
 
-  .fakeQr {
-    width: 160px;
-    height: 160px;
+  .pixKeyValue {
+    font-size: 1rem;
   }
 
-  .codeRow {
+  .pixKeyRow {
     flex-direction: column;
+    align-items: flex-start;
   }
 
-  .codeRow button {
+  .copyBtn {
     width: 100%;
+    text-align: center;
   }
 
   .actions {
@@ -306,22 +351,5 @@
   .actions > * {
     width: 100%;
     min-width: 0;
-  }
-}
-
-@media (max-width: 400px) {
-  .card {
-    padding: 1.5rem 1rem;
-  }
-
-  .valueBox,
-  .qrPlaceholder,
-  .info {
-    padding: 1rem;
-  }
-
-  .fakeQr {
-    width: 140px;
-    height: 140px;
   }
 }
