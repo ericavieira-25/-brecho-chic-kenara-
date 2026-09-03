@@ -216,26 +216,6 @@ useEffect(() => {
         </div>
       </div>
 
-      {/* ── CTA BANNER ── */}
-      <section className={styles.ctaBanner}>
-        <div className={styles.ctaInner}>
-          <p className={styles.ctaEyebrow}>Para vendedoras</p>
-          <h2 className={styles.ctaTitle}>Tem peças para vender?</h2>
-          <p className={styles.ctaText}>
-            Cadastre suas roupas e acessórios e ganhe dinheiro com o que está parado no armário.
-            É fácil, rápido e gratuito.
-          </p>
-          <div className={styles.ctaBtns}>
-            <Link to="/adicionar-produto" className={styles.ctaBtnLight}>
-              Quero vender minhas peças
-            </Link>
-            <Link to="/catalogo" className={styles.ctaBtnOutline}>
-              Ver como funciona
-            </Link>
-          </div>
-        </div>
-      </section>
-
     </div>
   );
 }
