@@ -18,6 +18,8 @@
 
 .modal {
   background: var(--color-surface);
+  color: var(--color-text, #29231e);
+  text-align: left;
   border-radius: var(--radius-2xl);
   width: 100%;
   max-width: 560px;
@@ -74,4 +76,8 @@
 
 .body {
   padding: var(--space-6);
+  line-height: 1.65;
 }
+
+.body p + p { margin-top: 1rem; }
+.body a { color: #75354b; text-decoration: underline; overflow-wrap: anywhere; }
