@@ -1,6 +1,6 @@
 # Revisão funcional — 09/09/2026
 
-Revisão local com contas fictícias e backend isolado. Os pedidos reais não foram alterados pelos testes. As alterações não foram publicadas.
+Revisão local com contas fictícias e backend isolado. Os pedidos reais não foram alterados pelos testes. A versão revisada foi publicada em 10/09/2026, conforme registro abaixo.
 
 ## Cobertura confirmada no navegador
 
@@ -48,3 +48,12 @@ Revisão local com contas fictícias e backend isolado. Os pedidos reais não fo
 - Ordenações menor preço, maior preço, maior desconto e mais recentes verificadas com produtos fictícios de preços distintos.
 - Corrigida ausência dos tamanhos 34, 42 e 44 no filtro. Catálogo agora utiliza a mesma lista de tamanhos do cadastro.
 - Após as alterações, 15 testes automatizados e compilação passaram. Dados de teste mantidos exclusivamente na transação isolada, encerrada ao finalizar.
+
+## Publicação — 10/09/2026
+
+- Código salvo no GitHub, branch main, commit de implementação `2b0afd7`.
+- Produção: https://brecho-chic-kenara.vercel.app.
+- Implantação Vercel: `dpl_5U5kF4AznFLTgpSuVTWqfm9Q1RVm`, estado READY.
+- DATABASE_URL de produção preservada; AUTH_SECRET configurado como segredo na Vercel.
+- Página inicial, catálogo e API de produtos responderam HTTP 200; API retornou quatro produtos existentes. Catálogo conferido no navegador.
+- APIs de conta e pedidos responderam HTTP 401 sem autenticação, como esperado. Nenhum pedido real criado para a conferência de publicação.
