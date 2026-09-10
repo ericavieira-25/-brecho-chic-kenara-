@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 import { ensureProductsTable, getPool } from './_db.js';
+import { readSession } from './_session.js';
 
 function parseCookies(header = '') {
   return Object.fromEntries(
@@ -18,63 +19,9 @@ function parseCookies(header = '') {
 }
 
 function requireAdmin(req, res) {
-  const cookies = parseCookies(req.headers.cookie || '');
-
-  const token =
-    cookies.kenara_admin_session ||
-    cookies.kenara_user_session ||
-    '';
-
-  const [payload, signature] = token.split('.');
-
-  if (!payload || !signature) {
-    res.status(401).json({
-      erro: 'Acesso administrativo não autorizado.',
-    });
-
-    return false;
-  }
-
-  const secret =
-    process.env.AUTH_SECRET || 'development-only-change-me';
-
-  const expectedSignature = crypto
-    .createHmac('sha256', secret)
-    .update(payload)
-    .digest('base64url');
-
-  let claims = null;
-
-  try {
-    claims = JSON.parse(
-      Buffer.from(payload, 'base64url').toString()
-    );
-  } catch {
-    claims = null;
-  }
-
-  const signaturesMatch =
-    signature.length === expectedSignature.length &&
-    crypto.timingSafeEqual(
-      Buffer.from(signature),
-      Buffer.from(expectedSignature)
-    );
-
-  if (
-    !signaturesMatch ||
-    !claims ||
-    claims.role !== 'administradora' ||
-    !claims.exp ||
-    claims.exp <= Math.floor(Date.now() / 1000)
-  ) {
-    res.status(401).json({
-      erro: 'Acesso administrativo não autorizado.',
-    });
-
-    return false;
-  }
-
-  return true;
+  if (readSession(req)?.role === 'administradora') return true;
+  res.status(401).json({ erro: 'Acesso administrativo não autorizado.' });
+  return false;
 }
 
 function requireCsrf(req, res) {
@@ -97,7 +44,7 @@ function requireCsrf(req, res) {
   }
 
   const valid =
-    headerToken.length === cookieToken.length &&
+    Buffer.byteLength(headerToken) === Buffer.byteLength(cookieToken) &&
     crypto.timingSafeEqual(
       Buffer.from(headerToken),
       Buffer.from(cookieToken)
@@ -115,6 +62,9 @@ function requireCsrf(req, res) {
 }
 
 function validateProduct(body) {
+  if (body?.tags !== undefined && (!Array.isArray(body.tags) || body.tags.some(tag => typeof tag !== 'string'))) {
+    return 'Tags devem ser uma lista de textos.';
+  }
   if (!body || !String(body.name || '').trim()) {
     return 'Nome é obrigatório.';
   }
@@ -203,13 +153,7 @@ export default async function handler(req, res) {
       /*
        * Gera o próximo ID.
        */
-      const idResult = await db.query(
-        `
-        SELECT COALESCE(MAX(id), 0) + 1 AS id
-        FROM products
-        `
-      );
-
+      const idResult = await db.query("SELECT nextval('products_id_seq') AS id");
       const nextId = Number(idResult.rows[0].id);
 
       /*
@@ -233,7 +177,8 @@ export default async function handler(req, res) {
           supplier_id,
           supplier_name,
           created_by,
-          status
+          status,
+          tags
         )
         VALUES (
           $1,
@@ -251,7 +196,8 @@ export default async function handler(req, res) {
           $13,
           $14,
           $15,
-          $16
+          $16,
+          $17::jsonb
         )
         RETURNING *
         `,
@@ -276,6 +222,7 @@ export default async function handler(req, res) {
           supplierName || null,
           createdBy || null,
           status || 'disponivel',
+          JSON.stringify(req.body.tags || []),
         ]
       );
 
@@ -285,9 +232,27 @@ export default async function handler(req, res) {
       });
     }
 
-    /*
-     * DELETE /api/products/:id
-     */
+    if (req.method === 'PATCH') {
+      if (!requireAdmin(req, res) || !requireCsrf(req, res)) return;
+      const id = Number(req.query?.id);
+      if (!Number.isSafeInteger(id) || id <= 0) return res.status(400).json({ erro: 'ID de produto inválido.' });
+      const body = req.body || {};
+      const error = validateProduct(body);
+      if (error) return res.status(400).json({ erro: error });
+      if (!['disponivel', 'indisponivel'].includes(body.status)) return res.status(400).json({ erro: 'Disponibilidade inválida.' });
+      const result = await getPool().query(
+        `UPDATE products SET name=$1, category=$2, category_name=$3, size=$4, condition=$5, condition_label=$6,
+          price=$7, original_price=$8, brand=$9, description=$10, photo=$11, supplier_id=$12, supplier_name=$13, status=$14, tags=$16::jsonb
+         WHERE id=$15 AND status NOT IN ('reservado','vendido') RETURNING *`,
+        [String(body.name).trim(), body.category || null, body.categoryName || null, body.size || null,
+          body.condition || null, body.conditionLabel || null, Number(body.price), body.originalPrice === '' || body.originalPrice == null ? null : Number(body.originalPrice),
+          body.brand || null, body.description || null, body.photo || null, body.supplierId, body.supplierName || null, body.status, id, JSON.stringify(body.tags || [])]
+      );
+      if (!result.rowCount) return res.status(409).json({ erro: 'Peça não encontrada, reservada ou já vendida.' });
+      return res.status(200).json({ produto: result.rows[0] });
+    }
+
+    /* DELETE /api/products/:id */
     if (req.method === 'DELETE') {
       if (!requireAdmin(req, res)) {
         return;
@@ -334,7 +299,6 @@ export default async function handler(req, res) {
 
     return res.status(500).json({
       erro:
-        error?.message ||
         'Erro interno ao processar a solicitação.',
     });
   }

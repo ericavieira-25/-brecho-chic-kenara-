@@ -1,0 +1,14 @@
+.container { width: min(1200px, 100%); margin: 0 auto; padding: 2rem 1rem; box-sizing: border-box; }
+.header { margin-bottom: 1.5rem; }
+.header h1 { font-size: clamp(1.5rem, 4vw, 2rem); margin: 1rem 0; }
+.back { display: inline-block; margin-bottom: .5rem; }
+.summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+.summaryCard { display: grid; gap: .75rem; padding: 1.25rem; background: #fff; border: 1px solid #e8e1e4; border-radius: 12px; }
+.summaryCard strong { font-size: 1.4rem; }
+.tableWrapper { max-width: 100%; overflow-x: auto; border: 1px solid #e8e1e4; border-radius: 12px; }
+.table { width: 100%; border-collapse: collapse; white-space: nowrap; }
+.table th, .table td { padding: 1rem; text-align: left; border-bottom: 1px solid #e8e1e4; }
+.table th { background: #faf4f7; }
+.table td small { display: block; margin-top: .3rem; }
+.table button { cursor: pointer; padding: .65rem; border: 1px solid #c9bac2; border-radius: 8px; background: white; }
+.empty { padding: 2rem; text-align: center; }

@@ -99,7 +99,7 @@ export default function Cart() {
               {items.map((item) => (
                 <div key={item.id} className={styles.item}>
                   <Link to={`/produto/${item.id}`}>
-                    <img src={(item.images?.[0] || item.photo || item.image || "/placeholder-product.jpg")} alt={item.name} className={styles.thumb} />
+                    <img src={(item.images?.[0] || item.photo || item.image || "/placeholder-product.svg")} alt={item.name} className={styles.thumb} />
                   </Link>
                   <div className={styles.itemInfo}>
                     <Link to={`/produto/${item.id}`}><h3 className={styles.itemName}>{item.name}</h3></Link>
@@ -110,7 +110,7 @@ export default function Cart() {
                     <div className={styles.qty}>
                       <button onClick={() => updateQuantity(item.id, item.quantity - 1)} disabled={item.quantity <= 1}>−</button>
                       <span>{item.quantity}</span>
-                      <button onClick={() => updateQuantity(item.id, item.quantity + 1)}>+</button>
+                      <button disabled title="Peça única">+</button>
                     </div>
                     <p className={styles.itemTotal}>{formatPrice(item.price * item.quantity)}</p>
                     <button className={styles.removeBtn} onClick={() => removeItem(item.id)}>🗑 Remover</button>

@@ -64,7 +64,7 @@ useEffect(() => {
   setLoading(false);
 }
 
-  loadProduct();
+  loadProduct().catch(() => { setProduct(null); setLoading(false); });
 }, [id]);
 
   const { addItem } = useCart();
@@ -104,7 +104,7 @@ if (loading) {
   const images =
     Array.isArray(product.images) && product.images.length
       ? product.images
-      : ['/placeholder-product.jpg'];
+      : [product.photo || product.image || '/placeholder-product.svg'];
 
   const safeActiveImg =
     activeImg >= images.length ? 0 : activeImg;
@@ -574,9 +574,7 @@ if (loading) {
               </div>
 
               <Link
-                to={`/catalogo?seller=${encodeURIComponent(
-                  product.seller || ''
-                )}`}
+                to={`/catalogo?fornecedora=${encodeURIComponent(product.supplierId || '')}`}
                 className={
                   styles.relatedLink
                 }

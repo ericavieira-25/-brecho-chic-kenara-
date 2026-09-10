@@ -4,7 +4,6 @@ import { useAuth } from '../../context/AuthContext';
 import {
   getLastCreatedOrderId,
   getOrderById,
-  clearLastOrderMarker,
 } from '../../data/orderService.js';
 import { formatPrice } from '../../utils/formatters';
 import Button from '../../components/ui/Button/Button';
@@ -40,17 +39,17 @@ export default function Confirmation() {
     // Buscar o pedido completo
     const createdOrder = getOrderById(lastOrderId);
 
-    if (createdOrder) {
+    if (createdOrder && createdOrder.customerId === user?.id) {
       setOrder(createdOrder);
 
       // Só limpar o marcador depois de carregar o pedido com sucesso
-      clearLastOrderMarker();
+
     } else {
       setError('Pedido não encontrado.');
     }
 
     setLoading(false);
-  }, []);
+  }, [user?.id]);
 
   function handleFinish() {
     navigate('/pedidos');

@@ -9,7 +9,8 @@ export default function Login() {
   const { login, error, setError } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const redirect = searchParams.get('redirect') || '/';
+  const requestedRedirect = searchParams.get('redirect') || '/';
+  const redirect = /^\/(?![\/\\])/.test(requestedRedirect) ? requestedRedirect : '/';
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
@@ -29,7 +30,6 @@ export default function Login() {
     if (Object.keys(errs).length) { setFieldErrors(errs); return; }
     setFieldErrors({});
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 600));
     const ok = await login(form.email, form.password);
     setLoading(false);
     if (ok) navigate(redirect);
@@ -44,9 +44,6 @@ export default function Login() {
           <p className={styles.subtitle}>Entre na sua conta para continuar</p>
         </div>
 
-        <div className={styles.demoHint}>
-          <strong>Conta demo:</strong> demo@brecho.com / 123456
-        </div>
 
         <form className={styles.form} onSubmit={handleSubmit} noValidate>
           <Input
@@ -76,7 +73,7 @@ export default function Login() {
         </form>
 
         <p className={styles.footer}>
-          Não tem conta? <Link to="/cadastro" className={styles.link}>Cadastre-se</Link>
+          Não tem conta? <Link to={`/cadastro?redirect=${encodeURIComponent(redirect)}`} className={styles.link}>Cadastre-se</Link>
         </p>
       </div>
     </div>

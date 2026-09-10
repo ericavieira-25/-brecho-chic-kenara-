@@ -36,9 +36,9 @@ export default function AdminSidebar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-function handleLogout() {
-  logout();
-  navigate('/admin/login', { replace: true });
+async function handleLogout() {
+  try { await logout(); navigate('/admin/login', { replace: true }); }
+  catch (error) { window.alert(error.message); }
 }
 
   return (

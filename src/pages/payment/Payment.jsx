@@ -16,11 +16,16 @@ export default function Payment() {
 
   const [order, setOrder] = useState(() => getOrderById(orderId));
 
+  const [loadedId, setLoadedId] = useState(null);
   useEffect(() => {
-    fetchOrderById(orderId).then((fetched) => {
-      if (fetched) setOrder(fetched);
+    let active = true;
+    fetchOrderById(orderId).then(fetched => {
+      if (active) { setOrder(fetched); setLoadedId(orderId); }
     });
+    return () => { active = false; };
   }, [orderId]);
+
+  if (loadedId !== orderId) return <p role="status">Carregando pedido…</p>;
 
   if (!user) {
     return <Navigate to="/login" replace />;

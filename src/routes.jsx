@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
 import Payment from './pages/payment/Payment.jsx';
 import PixPayment from './pages/PixPayment/PixPayment';
@@ -54,6 +54,8 @@ export default function AppRoutes() {
           <Route path="/login" element={<Login />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/cadastro" element={<Register />} />
+          <Route path="/adicionar-produto" element={<Navigate to="/admin/produtos/novo" replace />} />
+          <Route path="/admin/produtos/:productId/editar" element={<ProtectedRoute allowedRoles={[USER_ROLES.ADMIN]} redirectTo="/admin/login"><AddProduct /></ProtectedRoute>} />
           <Route path="/perfil" element={<Profile />} />
           <Route path="/pedidos" element={<Orders />} />
 

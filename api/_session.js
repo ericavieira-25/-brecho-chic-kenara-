@@ -5,7 +5,8 @@ const ADMIN_COOKIE = 'kenara_admin_session';
 const SESSION_MAX_AGE = 60 * 60 * 24 * 30;
 
 function secret() {
-  return process.env.AUTH_SECRET || 'development-only-change-me';
+  if (!process.env.AUTH_SECRET) throw new Error('AUTH_SECRET não configurado.');
+  return process.env.AUTH_SECRET;
 }
 
 function encode(value) {
@@ -45,7 +46,7 @@ export function readSession(req) {
   const token = cookies[SESSION_COOKIE] || cookies[ADMIN_COOKIE];
   const [payload, signature] = (token || '').split('.');
 
-  if (!payload || !signature) return null;
+  if (!payload || !signature || !/^[A-Za-z0-9_-]{43}$/.test(signature)) return null;
 
   const expected = sign(payload);
   if (
@@ -78,6 +79,9 @@ export function setSessionCookies(res, user) {
     );
   }
 
+  if (user.role !== 'administradora') {
+    cookies.push(`${ADMIN_COOKIE}=; HttpOnly; Path=/; Max-Age=0; SameSite=Lax${secure}`, `kenara_csrf=; Path=/; Max-Age=0; SameSite=Lax${secure}`);
+  }
   res.setHeader('Set-Cookie', cookies);
 }
 

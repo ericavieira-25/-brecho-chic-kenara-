@@ -3,8 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useDebounce } from '../../../hooks/useDebounce';
 import { quickSearch } from '../../../data/productService';
 import styles from './SearchBar.module.css';
+import { useDialog } from '../../../hooks/useDialog';
 
 export default function SearchBar({ onClose }) {
+  const panel = useDialog(true, onClose);
   const [query, setQuery] = useState('');
   const debouncedQuery = useDebounce(query, 300);
   const [results, setResults] = useState([]);
@@ -16,11 +18,11 @@ export default function SearchBar({ onClose }) {
   }, []);
 
   useEffect(() => {
-    if (debouncedQuery.trim().length < 2) {
-      setResults([]);
-      return;
-    }
-    setResults(quickSearch(debouncedQuery, 6));
+    let active = true;
+    quickSearch(debouncedQuery, 6)
+      .then((items) => { if (active) setResults(items); })
+      .catch(() => { if (active) setResults([]); });
+    return () => { active = false; };
   }, [debouncedQuery]);
 
   function handleSelect(id) {
@@ -38,7 +40,7 @@ export default function SearchBar({ onClose }) {
 
   return (
     <div className={styles.backdrop} onClick={onClose}>
-      <div className={styles.container} onClick={(e) => e.stopPropagation()}>
+      <div ref={panel} role="dialog" aria-modal="true" aria-label="Buscar produtos" tabIndex={-1} className={styles.container} onClick={(e) => e.stopPropagation()}>
         <form className={styles.form} onSubmit={handleSubmit}>
           <span className={styles.searchIcon}>🔍</span>
           <input
@@ -49,14 +51,14 @@ export default function SearchBar({ onClose }) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
-          <button type="button" className={styles.closeBtn} onClick={onClose}>✕</button>
+          <button type="button" aria-label="Fechar busca" className={styles.closeBtn} onClick={onClose}>✕</button>
         </form>
         {results.length > 0 && (
           <ul className={styles.results}>
             {results.map((p) => (
               <li key={p.id}>
                 <button className={styles.resultItem} onClick={() => handleSelect(p.id)}>
-                  <img src={(p.images?.[0] || p.photo || p.image || "/placeholder-product.jpg")} alt={p.name} className={styles.thumb} />
+                  <img src={(p.images?.[0] || p.photo || p.image || "/placeholder-product.svg")} alt={p.name} className={styles.thumb} />
                   <div className={styles.resultInfo}>
                     <span className={styles.resultName}>{p.name}</span>
                     <span className={styles.resultMeta}>{p.brand} · {p.size}</span>

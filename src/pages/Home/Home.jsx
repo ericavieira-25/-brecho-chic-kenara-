@@ -12,6 +12,7 @@ export default function Home() {
   const { hasRole } = useGuard();
   const isAdmin = hasRole(USER_ROLES.ADMIN);
   const [newest, setNewest] = useState([]);
+const [loadError, setLoadError] = useState('');
 const [featured, setFeatured] = useState([]);
 
 useEffect(() => {
@@ -25,10 +26,11 @@ useEffect(() => {
     setFeatured(featuredProducts);
   }
 
-  loadProducts();
+  loadProducts().catch((error) => setLoadError(error.message));
 }, []);
   return (
     <div className={styles.page}>
+      {loadError && <p role="alert">{loadError}</p>}
 
       {/* ── HERO ── */}
       <section className={styles.hero}>
@@ -59,8 +61,8 @@ useEffect(() => {
             </div>
             <div className={styles.heroStats}>
               <div className={styles.stat}>
-                <span className={styles.statNumber}>200+</span>
-                <span className={styles.statLabel}>peças disponíveis</span>
+                <span className={styles.statNumber}>Peças</span>
+                <span className={styles.statLabel}>selecionadas com carinho</span>
               </div>
               <div className={styles.stat}>
                 <span className={styles.statNumber}>♥</span>
@@ -221,7 +223,7 @@ useEffect(() => {
         <div className={styles.sloganInner}>
           <div className={styles.sloganHeart}>♥</div>
           <p className={styles.sloganEyebrow}>Nossa missão</p>
-          <h2 className={styles.sloganTitle}>
+          <h2 id="sobre" className={styles.sloganTitle}>
             Jesus, meu<br />
             <span className={styles.sloganHighlight}>Sócio majoritário</span>
           </h2>

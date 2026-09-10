@@ -81,11 +81,13 @@ function publicUser(row) {
 }
 
 async function seedDemoUsers() {
+  if (process.env.ENABLE_DEMO_USERS !== 'true' || process.env.NODE_ENV === 'production') return;
   if (!demoSeedPromise) {
     demoSeedPromise = (async () => {
       const db = getPool();
       for (const user of DEMO_USERS) {
-        const pw = user.id === 'user-demo-admin' ? 'kenara25@' : '123456';
+        const pw = process.env.DEMO_PASSWORD;
+        if (!pw) throw new Error('DEMO_PASSWORD não configurada.');
         const passwordHash = await hashPassword(pw);
         await db.query(
           `INSERT INTO users
@@ -151,6 +153,7 @@ export default async function handler(req, res) {
       if (!session) return res.status(401).json({ erro: 'Autenticação necessária.' });
 
       const { name, phone, address } = req.body || {};
+      if (name !== undefined && !String(name).trim()) return res.status(400).json({ erro: 'Nome é obrigatório.' });
       const fields = [];
       const values = [];
       let idx = 1;
@@ -222,6 +225,9 @@ export default async function handler(req, res) {
     }
 
     const user = publicUser(row);
+    if (body.admin && user.role !== 'administradora') {
+      return res.status(403).json({ erro: 'Acesso restrito à administradora.' });
+    }
     setSessionCookies(res, user);
     return res.status(200).json({ user });
   } catch (error) {

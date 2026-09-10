@@ -1,7 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { mockOrders } from '../../data/orders.js';
-import { mergeOrdersWithMock } from '../../data/orderService.js';
+import { useStoreData } from '../../hooks/useStoreData.js';
+import { getSupplierById } from '../../data/suppliers.js';
+
 import {
   getSupplierPayment,
   markSupplierPaymentAsPaid,
@@ -23,99 +24,34 @@ function formatPrice(value) {
 function formatDate(date) {
   if (!date) return '-';
 
-  return new Date(date).toLocaleDateString('pt-BR');
+  return new Date(/^\d{4}-\d{2}-\d{2}$/.test(date) ? `${date}T12:00:00` : date).toLocaleDateString('pt-BR');
 }
 
 export default function SupplierPayments() {
   const [, setRefresh] = useState(0);
+  const {orders, error: loadError} = useStoreData();
 
-  const payments = useMemo(() => {
-    const orders = mergeOrdersWithMock(mockOrders);
+  const payments = (() => {
+
     const result = [];
     orders.forEach((order) => {
       if (!order.items) return;
       const suppliers = {};
       order.items.forEach((item) => {
         const supplierId = item.supplierId || item.fornecedoraId || 'supplier-unknown';
-        const supplierName = item.supplierName || item.fornecedoraName || 'Fornecedora não identificada';
+        const supplierName = item.supplierName || item.fornecedoraName || getSupplierById(supplierId)?.name || 'Fornecedora não identificada';
         const amount = Number(item.price || 0) * Number(item.quantity || item.qty || 1);
         if (!suppliers[supplierId]) suppliers[supplierId] = { supplierId, supplierName, amount: 0 };
         suppliers[supplierId].amount += amount;
       });
       Object.values(suppliers).forEach((supplier) => {
         const payment = getSupplierPayment(order.id, supplier.supplierId);
-        result.push({ ...supplier, orderId: order.id, supplierShare: calculateSupplierShare(supplier.amount), status: payment.status });
+        result.push({ ...supplier, grossAmount: roundCurrency(supplier.amount), orderDate: order.date, paidAt: payment.paidAt, orderId: order.id, supplierShare: calculateSupplierShare(supplier.amount), status: payment.status });
       });
     });
     return result;
-  }, []);
+  })();
 
-  /* payments are derived before the authorization branches above */
-  /*
-    const orders = mergeOrdersWithMock(mockOrders);
-
-    const result = [];
-
-    orders.forEach((order) => {
-      if (!order.items) return;
-
-      const suppliers = {};
-
-      order.items.forEach((item) => {
-        const supplierId =
-          item.supplierId ||
-          item.fornecedoraId ||
-          'supplier-unknown';
-
-        const supplierName =
-          item.supplierName ||
-          item.fornecedoraName ||
-          'Fornecedora não identificada';
-
-        const amount =
-          Number(item.price || 0) *
-          Number(item.quantity || item.qty || 1);
-
-        if (!suppliers[supplierId]) {
-          suppliers[supplierId] = {
-            supplierId,
-            supplierName,
-            amount: 0,
-          };
-        }
-
-        suppliers[supplierId].amount += amount;
-      });
-
-      Object.values(suppliers).forEach((supplier) => {
-        const supplierShare = calculateSupplierShare(
-          supplier.amount
-        );
-
-        const payment = getSupplierPayment(
-          order.id,
-          supplier.supplierId
-        );
-
-        result.push({
-          orderId: order.id,
-          orderDate: order.date,
-          supplierId: supplier.supplierId,
-          supplierName: supplier.supplierName,
-          grossAmount: roundCurrency(supplier.amount),
-          supplierShare,
-          status: payment.status,
-          paidAt: payment.paidAt,
-        });
-      });
-    });
-
-    return result.sort(
-      (a, b) =>
-        new Date(b.orderDate) -
-        new Date(a.orderDate)
-    );
-  }, [setRefresh]); */
 
   const totalToPay = roundCurrency(
     payments
@@ -162,7 +98,8 @@ export default function SupplierPayments() {
             ← Voltar ao painel
           </Link>
 
-          <h1>💸 Repasses às Fornecedoras</h1>
+          {loadError && <p role="alert">{loadError}</p>}
+        <h1>💸 Repasses às Fornecedoras</h1>
 
           <p>
             Controle dos valores de 75% destinados às

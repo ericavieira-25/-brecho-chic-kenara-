@@ -1,16 +1,26 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { getAllProducts } from '../../data/productService.js';
+import { sizes } from '../../data/categories';
 import { formatPrice } from '../../utils/formatters';
 import Button from '../../components/ui/Button/Button';
 import styles from './Catalog.module.css';
 
 export default function Catalog() {
-  const [search, setSearch] = useState('');
-  const [category, setCategory] = useState('');
-  const [size, setSize] = useState('');
-  const [condition, setCondition] = useState('');
-  const [sort, setSort] = useState('recent');
+  const [params, setParams] = useSearchParams();
+  function setFilter(key, value) { const next = new URLSearchParams(params); if (value) next.set(key,value); else next.delete(key); setParams(next, {replace:true}); }
+  const search = params.get('q') || '';
+  const setSearch = value => setFilter('q', value);
+  const [loadError, setLoadError] = useState('');
+  const supplierId = params.get('fornecedora') || '';
+  const category = params.get('categoria') || '';
+  const setCategory = value => setFilter('categoria', value);
+  const size = params.get('tamanho') || '';
+  const setSize = value => setFilter('tamanho', value);
+  const condition = params.get('condicao') || '';
+  const setCondition = value => setFilter('condicao', value);
+  const sort = params.get('sort') === 'mais-recentes' ? 'recent' : params.get('sort') || 'recent';
+  const setSort = value => setFilter('sort', value);
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -21,12 +31,13 @@ export default function Catalog() {
         setLoading(true);
 
         const result = await getAllProducts();
-        console.log('PRODUTOS RECEBIDOS NO CATÁLOGO:', result);
+
 
         setProducts(Array.isArray(result) ? result : []);
       } catch (error) {
         console.error('Erro ao carregar catálogo:', error);
         setProducts([]);
+        setLoadError(error.message);
       } finally {
         setLoading(false);
       }
@@ -68,6 +79,8 @@ export default function Catalog() {
         !condition || product.condition === condition;
 
       return (
+        product.available !== false &&
+        (!supplierId || product.supplierId === supplierId) &&
         matchesSearch &&
         matchesCategory &&
         matchesSize &&
@@ -116,13 +129,7 @@ export default function Catalog() {
       );
     });
 
-  function clearFilters() {
-    setSearch('');
-    setCategory('');
-    setSize('');
-    setCondition('');
-    setSort('recent');
-  }
+  function clearFilters() { setParams({}, {replace:true}); }
 
   function getConditionLabel(value) {
     const labels = {
@@ -152,7 +159,7 @@ export default function Catalog() {
       Array.isArray(product.images) &&
       product.images.length > 0
     ) {
-      return (product.images?.[0] || product.photo || product.image || "/placeholder-product.jpg");
+      return (product.images?.[0] || product.photo || product.image || "/placeholder-product.svg");
     }
 
     if (product.photo) {
@@ -163,7 +170,7 @@ export default function Catalog() {
       return product.image;
     }
 
-    return '/placeholder-product.jpg';
+    return '/placeholder-product.svg';
   }
 
   if (loading) {
@@ -198,7 +205,8 @@ export default function Catalog() {
               BRECHÓ CHIC KENARA
             </p>
 
-            <h1 className={styles.title}>
+            {loadError && <p role="alert">{loadError}</p>}
+        <h1 className={styles.title}>
               Catálogo
             </h1>
 
@@ -291,15 +299,7 @@ export default function Catalog() {
                 Todos
               </option>
 
-              <option value="PP">PP</option>
-              <option value="P">P</option>
-              <option value="M">M</option>
-              <option value="G">G</option>
-              <option value="GG">GG</option>
-              <option value="XG">XG</option>
-              <option value="36">36</option>
-              <option value="38">38</option>
-              <option value="40">40</option>
+              {sizes.map(value => <option key={value} value={value}>{value}</option>)}
               <option value="Único">Único</option>
             </select>
           </div>
@@ -368,7 +368,7 @@ export default function Catalog() {
             category ||
             size ||
             condition ||
-            sort !== 'recent') && (
+            sort !== 'recent' || supplierId) && (
             <Button
               variant="outline"
               onClick={clearFilters}

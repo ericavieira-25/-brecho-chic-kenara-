@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useDialog } from '../../../hooks/useDialog';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../../../context/CartContext';
 import { formatPrice } from '../../../utils/formatters';
@@ -9,11 +9,7 @@ export default function CartDrawer({ isOpen, onClose }) {
   const { items, removeItem, updateQuantity, subtotal, shipping, total, totalItems } = useCart();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (isOpen) document.body.style.overflow = 'hidden';
-    else document.body.style.overflow = '';
-    return () => { document.body.style.overflow = ''; };
-  }, [isOpen]);
+  const panel = useDialog(isOpen, onClose);
 
   if (!isOpen) return null;
 
@@ -25,10 +21,10 @@ export default function CartDrawer({ isOpen, onClose }) {
   return (
     <>
       <div className={styles.backdrop} onClick={onClose} />
-      <div className={styles.drawer}>
+      <div ref={panel} role="dialog" aria-modal="true" aria-label="Carrinho" tabIndex={-1} className={styles.drawer}>
         <div className={styles.header}>
           <h3 className={styles.title}>Carrinho {totalItems > 0 && <span className={styles.count}>({totalItems})</span>}</h3>
-          <button className={styles.closeBtn} onClick={onClose}>✕</button>
+          <button aria-label="Fechar carrinho" className={styles.closeBtn} onClick={onClose}>✕</button>
         </div>
 
         {items.length === 0 ? (
@@ -45,7 +41,7 @@ export default function CartDrawer({ isOpen, onClose }) {
               {items.map((item) => (
                 <li key={item.id} className={styles.item}>
                   <Link to={`/produto/${item.id}`} onClick={onClose}>
-                    <img src={(item.images?.[0] || item.photo || item.image || "/placeholder-product.jpg")} alt={item.name} className={styles.thumb} />
+                    <img src={(item.images?.[0] || item.photo || item.image || "/placeholder-product.svg")} alt={item.name} className={styles.thumb} />
                   </Link>
                   <div className={styles.itemInfo}>
                     <p className={styles.itemName}>{item.name}</p>
@@ -56,9 +52,9 @@ export default function CartDrawer({ isOpen, onClose }) {
                     <div className={styles.qty}>
                       <button onClick={() => updateQuantity(item.id, item.quantity - 1)} disabled={item.quantity <= 1}>−</button>
                       <span>{item.quantity}</span>
-                      <button onClick={() => updateQuantity(item.id, item.quantity + 1)}>+</button>
+                      <button disabled title="Peça única">+</button>
                     </div>
-                    <button className={styles.removeBtn} onClick={() => removeItem(item.id)}>🗑</button>
+                    <button aria-label={`Remover ${item.name}`} className={styles.removeBtn} onClick={() => removeItem(item.id)}>🗑</button>
                   </div>
                 </li>
               ))}

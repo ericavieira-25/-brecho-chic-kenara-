@@ -6,7 +6,7 @@ import Button from '../../components/ui/Button/Button';
 import styles from './Profile.module.css';
 
 export default function Profile() {
-  const { user, logout, setError } = useAuth();
+  const { user, logout, setUser } = useAuth();
   const navigate = useNavigate();
 
   const [editing, setEditing] = useState(false);
@@ -21,9 +21,9 @@ export default function Profile() {
 
   if (!localUser) return <Navigate to="/login?redirect=/perfil" replace />;
 
-  function handleLogout() {
-    logout();
-    navigate('/');
+  async function handleLogout() {
+    try { await logout(); navigate('/'); }
+    catch (error) { setFeedbackMsg(error.message); }
   }
 
   function startEdit() {
@@ -54,6 +54,7 @@ export default function Profile() {
       const data = await res.json().catch(() => ({}));
       if (res.ok && data.user) {
         setLocalUser(data.user);
+        setUser(data.user);
         setEditing(false);
         setFeedbackMsg('Perfil atualizado com sucesso!');
       } else {

@@ -7,8 +7,7 @@
  */
 
 import { useMemo } from 'react';
-import { mockOrders } from '../../data/orders.js';
-import { mergeOrdersWithMock } from '../../data/orderService.js';
+import { useStoreData } from '../../hooks/useStoreData.js';
 import { calculateOrderSplitBySupplier, calculateTenPercentMetric, roundCurrency } from '../../data/financial.js';
 import styles from './AdminFinancialTable.module.css';
 
@@ -20,8 +19,9 @@ function formatPrice(value) {
 }
 
 export default function AdminFinancialTable() {
+  const { orders: allOrders, error: dataError } = useStoreData();
   const tableData = useMemo(() => {
-    const allOrders = mergeOrdersWithMock(mockOrders);
+
     const grouped = {};
     allOrders.forEach((order) => {
       const [year, month] = order.date.split('-');
@@ -35,7 +35,7 @@ export default function AdminFinancialTable() {
       const split = calculateOrderSplitBySupplier(items);
       return { period, totalOrders: orders.length, totalSales: roundCurrency(totalSales), supplierShare: split.totalSupplierShare, adminShare: split.totalAdminShare, metric10: roundCurrency(calculateTenPercentMetric(totalSales)) };
     });
-  }, []);
+  }, [allOrders]);
   const totals = useMemo(() => tableData.reduce((result, row) => ({
     totalOrders: result.totalOrders + row.totalOrders,
     totalSales: roundCurrency(result.totalSales + row.totalSales),
@@ -46,7 +46,7 @@ export default function AdminFinancialTable() {
 
   // Agrupar dados por período (mês) - usando pedidos reais + mockOrders
   /*
-    const allOrders = mergeOrdersWithMock(mockOrders);
+
     const grouped = {};
 
     allOrders.forEach((order) => {
@@ -121,7 +121,8 @@ export default function AdminFinancialTable() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h1>Controle Financeiro</h1>
+        {dataError && <p role="alert">{dataError}</p>}
+          <h1>Controle Financeiro</h1>
 <p className={styles.subtitle}>
   Acompanhe vendas, lucro da administradora, valores das fornecedoras e a métrica de 10%.
 </p> </div>

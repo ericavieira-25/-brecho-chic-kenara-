@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Input from '../../components/ui/Input/Input';
 import Button from '../../components/ui/Button/Button';
@@ -8,6 +8,9 @@ import styles from './Register.module.css';
 export default function Register() {
   const { register, error, setError } = useAuth();
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const requested = params.get('redirect') || '/';
+  const redirect = /^\/(?![\/\\])/.test(requested) ? requested : '/';
   const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '' });
   const [loading, setLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
@@ -30,10 +33,9 @@ export default function Register() {
     if (Object.keys(errs).length) { setFieldErrors(errs); return; }
     setFieldErrors({});
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 600));
     const ok = await register(form.name, form.email, form.password);
     setLoading(false);
-    if (ok) navigate('/');
+    if (ok) navigate(redirect);
   }
 
   return (
@@ -92,7 +94,7 @@ export default function Register() {
         </form>
 
         <p className={styles.footer}>
-          Já tem conta? <Link to="/login" className={styles.link}>Entrar</Link>
+          Já tem conta? <Link to={`/login?redirect=${encodeURIComponent(redirect)}`} className={styles.link}>Entrar</Link>
         </p>
       </div>
     </div>

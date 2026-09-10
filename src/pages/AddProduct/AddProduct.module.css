@@ -108,7 +108,18 @@
 }
 
 .fileInput {
-  display: none;
+  display: block;
+  max-width: 100%;
+  margin: 0.75rem 0;
+}
+
+.fileInput::file-selector-button {
+  padding: 0.65rem 1rem;
+  margin-right: 0.75rem;
+  border: 1px solid #c9bac2;
+  border-radius: 8px;
+  background: #faf4f7;
+  cursor: pointer;
 }
 
 .grid2 {

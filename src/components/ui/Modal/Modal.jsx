@@ -1,21 +1,14 @@
-import { useEffect } from 'react';
+import { useDialog } from '../../../hooks/useDialog';
 import styles from './Modal.module.css';
 
 export default function Modal({ isOpen, onClose, title, children }) {
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => { document.body.style.overflow = ''; };
-  }, [isOpen]);
+  const panel = useDialog(isOpen, onClose);
 
   if (!isOpen) return null;
 
   return (
     <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+      <div ref={panel} role="dialog" aria-modal="true" aria-label={title || 'Detalhes'} tabIndex={-1} className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.header}>
           {title && <h3 className={styles.title}>{title}</h3>}
           <button className={styles.close} onClick={onClose} aria-label="Fechar">

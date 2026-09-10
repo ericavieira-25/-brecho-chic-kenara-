@@ -1,3 +1,4 @@
+import { useConfirmation } from '../../hooks/useConfirmation.jsx';
 /**
  * AdminDashboard.jsx
  *
@@ -21,6 +22,7 @@ function formatPrice(value) {
 }
 
 export default function AdminDashboard() {
+  const [confirmAction, confirmationDialog] = useConfirmation();
   const [allOrders, setAllOrders] = useState(() => getRealOrders());
 
   useEffect(() => {
@@ -34,19 +36,32 @@ export default function AdminDashboard() {
       .catch(() => {});
   }, []);
 
+  const [actionError, setActionError] = useState('');
+  const [busy, setBusy] = useState(false);
+  async function changeOrder(order, cancel = false) {
+    if (busy) return;
+    setBusy(true); setActionError('');
+    try {
+      const response = await fetch('/api/orders?id=' + encodeURIComponent(order.id), { method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(cancel ? {status:'cancelado',paymentStatus:'canceled'} : {status:'processando',paymentStatus:'paid',paymentMethod:'pix'}) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.erro);
+      setAllOrders(previous => previous.map(item => item.id === order.id ? normalizeOrder(data.order) : item));
+    } catch (error) { setActionError(error.message); } finally { setBusy(false); }
+  }
   const metrics = useMemo(() => {
-    const totalSales = allOrders.reduce((sum, order) => {
+    const paidOrders = allOrders.filter(order => order.paymentStatus === 'paid');
+    const totalSales = paidOrders.reduce((sum, order) => {
       const total = Number(order?.total || 0);
       const shipping = Number(order?.shipping || 0);
       return sum + Math.max(total - shipping, 0);
     }, 0);
 
     const totalOrders = allOrders.length;
-    const totalProductsSold = allOrders.reduce(
+    const totalProductsSold = paidOrders.reduce(
       (sum, order) => sum + order.items.reduce((s, item) => s + Number(item.quantity || 0), 0),
       0
     );
-    const orderItems = allOrders.flatMap((order) => order.items);
+    const orderItems = paidOrders.flatMap((order) => order.items);
     const split = calculateOrderSplitBySupplier(orderItems);
     const metric10 = calculateTenPercentMetric(totalSales);
 
@@ -65,6 +80,8 @@ export default function AdminDashboard() {
     <AdminSidebar />
 
     <main className={styles.container}>
+      {confirmationDialog}
+      {actionError && <p role="alert">{actionError}</p>}
       <div className={styles.header}>
         <h1>Painel Administrativo</h1>
         <p className={styles.subtitle}>Visão geral de vendas, fornecedoras e distribuição financeira</p>
@@ -191,7 +208,7 @@ export default function AdminDashboard() {
                   </span>
 
                   <small>
-                    {new Date(order.date).toLocaleDateString('pt-BR')}
+                    {new Date(order.date + 'T12:00:00').toLocaleDateString('pt-BR')}
                   </small>
                 </div>
 
@@ -219,6 +236,11 @@ export default function AdminDashboard() {
                   </strong>
                 </div>
 
+                {order.paymentStatus !== 'paid' && order.status !== 'cancelado' && <div>
+                  <span>{order.paymentStatus === 'processing' ? 'Cliente informou pagamento. Confira o recebimento.' : 'Aguardando PIX'}</span>
+                  <button disabled={busy} onClick={async () => { if (await confirmAction('O valor entrou na conta da loja? Confirme apenas após conferir o recebimento.')) changeOrder(order); }}>Confirmar recebimento</button>
+                  <button disabled={busy} onClick={async () => { if (await confirmAction('Cancelar o pedido e liberar as peças?')) changeOrder(order, true); }}>Cancelar pedido</button>
+                </div>}
                 {order.id.startsWith('ORDER-') && (
                   <Link
                     to={`/pedidos/${order.id}`}
@@ -302,7 +324,7 @@ export default function AdminDashboard() {
 
             <tbody>
               {allOrders
-                     .filter((order) => order.id.startsWith('ORDER-'))
+                     .filter((order) => order.paymentStatus === 'paid')
                      .sort(
                   (a, b) =>
                     new Date(b.date) - new Date(a.date)

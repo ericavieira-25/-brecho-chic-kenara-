@@ -64,6 +64,15 @@ export default function Header() {
 
   const profileRef = useRef(null);
 
+  useEffect(() => {
+    function onKey(event) {
+      if (event.key === 'Escape') { setProfileOpen(false); setMobileOpen(false); }
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); setCartOpen(false); setSearchOpen(true); }
+    }
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, []);
+
   const isAdmin = hasRole(USER_ROLES.ADMIN);
 
   useEffect(() => {
@@ -87,10 +96,10 @@ export default function Header() {
     setMobileOpen(false);
   }
 
-  function handleLogout() {
+  async function handleLogout() {
     const wasAdmin = user?.role === 'administradora';
 
-    logout();
+    try { await logout(); } catch (error) { alert(error.message); return; }
     setProfileOpen(false);
 
     if (wasAdmin) {
@@ -168,7 +177,7 @@ export default function Header() {
             <button
               className={styles.iconBtn}
               onClick={() => setSearchOpen(true)}
-              aria-label="Buscar"
+              aria-label="Buscar" title="Buscar (Ctrl+K)" aria-keyshortcuts="Control+K Meta+K"
             >
               <IconSearch />
             </button>
@@ -219,7 +228,7 @@ export default function Header() {
               <button
                 className={styles.iconBtn}
                 onClick={() => setProfileOpen(!profileOpen)}
-                aria-label="Perfil"
+                aria-label="Perfil" aria-expanded={profileOpen}
               >
                 <IconUser />
               </button>

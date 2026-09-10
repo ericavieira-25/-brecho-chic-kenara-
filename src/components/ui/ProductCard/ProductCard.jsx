@@ -48,7 +48,7 @@ function ProductCard({ product }) {
       ? product.images[0]
       : product.photo ||
         product.image ||
-        '/placeholder-product.jpg';
+        '/placeholder-product.svg';
 
   const productUrl = '/produto/' + product.id;
 

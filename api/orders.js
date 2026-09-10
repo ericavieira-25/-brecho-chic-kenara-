@@ -1,4 +1,4 @@
-import { ensureOrdersTable, getPool } from './_db.js';
+import { ensureOrdersTable, ensureProductsTable, getPool } from './_db.js';
 import { readSession } from './_session.js';
 
 function normalizeItems(items) {
@@ -24,11 +24,6 @@ function publicOrder(row) {
   };
 }
 
-function parseDate(value) {
-  return /^\d{4}-\d{2}-\d{2}$/.test(String(value || ''))
-    ? value
-    : new Date().toISOString().split('T')[0];
-}
 
 function canAccessOrder(session, order) {
   return session.role === 'administradora' ||
@@ -74,77 +69,93 @@ export default async function handler(req, res) {
       return res.status(200).json({ orders: result.rows.map(publicOrder) });
     }
 
+
     if (req.method === 'POST') {
       const body = req.body?.order || req.body || {};
-      if (!body.id || !body.customerId || body.customerId !== session.id) {
-        return res.status(403).json({ erro: 'Pedido não pertence à sessão atual.' });
+      if (!session.id || !body.id || body.customerId !== session.id) return res.status(403).json({ erro: 'Pedido não pertence à sessão atual.' });
+      if (!Array.isArray(body.items) || !body.items.length || body.items.length > 100) return res.status(400).json({ erro: 'O pedido deve conter itens válidos.' });
+      const ids = body.items.map(item => Number(item.productId));
+      if (ids.some(id => !Number.isSafeInteger(id) || id <= 0) || new Set(ids).size !== ids.length || body.items.some(item => Number(item.quantity) !== 1)) {
+        return res.status(400).json({ erro: 'Cada peça é única: selecione uma unidade por produto.' });
       }
-      if (!Array.isArray(body.items) || body.items.length === 0) {
-        return res.status(400).json({ erro: 'O pedido deve conter itens.' });
-      }
-
-      const result = await db.query(
-        `INSERT INTO orders
-          (id, customer_id, customer_name, customer_email, date, created_at, status,
-           payment_status, payment_method, paid_at, subtotal, shipping, total, items)
-         VALUES ($1, $2, $3, $4, $5, COALESCE($6::timestamptz, NOW()), $7, $8, $9, $10,
-                 $11, $12, $13, $14::jsonb)
-         ON CONFLICT (id) DO UPDATE SET
-           status = EXCLUDED.status,
-           payment_status = EXCLUDED.payment_status,
-           payment_method = EXCLUDED.payment_method,
-           paid_at = EXCLUDED.paid_at,
-           subtotal = EXCLUDED.subtotal,
-           shipping = EXCLUDED.shipping,
-           total = EXCLUDED.total,
-           items = EXCLUDED.items
-         RETURNING *`,
-        [
-          body.id,
-          session.id,
-          String(body.customerName || ''),
-          String(body.customerEmail || session.email),
-          parseDate(body.date),
-          body.createdAt || null,
-          body.status || 'aguardando_pagamento',
-          body.paymentStatus || 'pending',
-          body.paymentMethod || null,
-          body.paidAt || null,
-          Number(body.subtotal || 0),
-          Number(body.shipping || 0),
-          Number(body.total || 0),
-          JSON.stringify(body.items),
-        ]
-      );
-      return res.status(201).json({ order: publicOrder(result.rows[0]) });
+      await ensureProductsTable();
+      const client = await db.connect();
+      try {
+        await client.query('BEGIN');
+        const existing = await client.query('SELECT * FROM orders WHERE id = $1', [body.id]);
+        if (existing.rows[0]) {
+          await client.query('ROLLBACK');
+          if (existing.rows[0].customer_id !== session.id) return res.status(409).json({ erro: 'Identificador de pedido já utilizado.' });
+          return res.status(200).json({ order: publicOrder(existing.rows[0]) });
+        }
+        const products = await client.query('SELECT * FROM products WHERE id = ANY($1::int[]) ORDER BY id FOR UPDATE', [ids]);
+        if (products.rows.length !== ids.length || products.rows.some(product => product.status !== 'disponivel')) {
+          await client.query('ROLLBACK');
+          return res.status(409).json({ erro: 'Uma ou mais peças já não estão disponíveis. Atualize o carrinho.' });
+        }
+        const items = products.rows.map(product => ({ productId: product.id, name: product.name, supplierId: product.supplier_id, price: Number(product.price), quantity: 1, brand: product.brand, size: product.size, image: product.photo }));
+        const subtotal = Math.round(items.reduce((sum, item) => sum + item.price, 0) * 100) / 100;
+        const shipping = subtotal >= 150 ? 0 : 15.9;
+        const total = Math.round((subtotal + shipping) * 100) / 100;
+        const result = await client.query(
+          "INSERT INTO orders (id, customer_id, customer_name, customer_email, date, status, payment_status, subtotal, shipping, total, items) VALUES ($1,$2,$3,$4,CURRENT_DATE,'aguardando_pagamento','pending',$5,$6,$7,$8::jsonb) RETURNING *",
+          [body.id, session.id, String(body.customerName || ''), session.email, subtotal, shipping, total, JSON.stringify(items)]
+        );
+        await client.query("UPDATE products SET status = 'reservado' WHERE id = ANY($1::int[])", [ids]);
+        await client.query('COMMIT');
+        return res.status(201).json({ order: publicOrder(result.rows[0]) });
+      } catch (error) {
+        await client.query('ROLLBACK');
+        if (error.code === '23505') return res.status(409).json({ erro: 'Pedido já registrado. Consulte seus pedidos.' });
+        throw error;
+      } finally { client.release(); }
     }
 
     if (req.method === 'PATCH') {
       const id = req.query?.id || req.body?.id;
-      const result = await db.query('SELECT * FROM orders WHERE id = $1', [id]);
-      const order = result.rows[0];
-      if (!order || !canAccessOrder(session, order)) {
-        return res.status(404).json({ erro: 'Pedido não encontrado.' });
-      }
-
       const body = req.body || {};
-      const updated = await db.query(
-        `UPDATE orders
-         SET status = COALESCE($1, status),
-             payment_status = COALESCE($2, payment_status),
-             payment_method = COALESCE($3, payment_method),
-             paid_at = COALESCE($4, paid_at)
-         WHERE id = $5
-         RETURNING *`,
-        [
-          body.status || null,
-          body.paymentStatus || null,
-          body.paymentMethod || null,
-          body.paidAt || null,
-          id,
-        ]
-      );
-      return res.status(200).json({ order: publicOrder(updated.rows[0]) });
+      const client = await db.connect();
+      try {
+        await client.query('BEGIN');
+        const result = await client.query('SELECT * FROM orders WHERE id = $1 FOR UPDATE', [id]);
+        const order = result.rows[0];
+        const admin = session.role === 'administradora';
+        if (!order || (!admin && order.customer_id !== session.id)) {
+          await client.query('ROLLBACK');
+          return res.status(404).json({ erro: 'Pedido não encontrado.' });
+        }
+        let status = body.status || order.status;
+        let paymentStatus = body.paymentStatus || order.payment_status;
+        const method = body.paymentMethod || order.payment_method;
+        if (!['aguardando_pagamento','processando','em_transito','entregue','cancelado'].includes(status) || !['pending','processing','paid','failed','canceled'].includes(paymentStatus) || (method && method !== 'pix')) {
+          await client.query('ROLLBACK');
+          return res.status(400).json({ erro: 'Estado de pedido ou pagamento inválido.' });
+        }
+        if (!admin && (body.paidAt || !['pending','processing','canceled'].includes(paymentStatus) || !['aguardando_pagamento','cancelado'].includes(status))) {
+          await client.query('ROLLBACK');
+          return res.status(403).json({ erro: 'Somente a administradora pode confirmar o recebimento.' });
+        }
+        if (order.status === 'cancelado' || (order.payment_status === 'paid' && (paymentStatus !== 'paid' || status === 'cancelado'))) {
+          await client.query('ROLLBACK');
+          return res.status(409).json({ erro: 'O pedido não permite essa alteração. Entre em contato com a loja.' });
+        }
+        if (status === 'cancelado') paymentStatus = 'canceled';
+        if (paymentStatus === 'paid' && status === 'aguardando_pagamento') status = 'processando';
+        if (['processando','em_transito','entregue'].includes(status) && paymentStatus !== 'paid') {
+          await client.query('ROLLBACK');
+          return res.status(400).json({ erro: 'Confirme o recebimento antes de avançar o pedido.' });
+        }
+        const updated = await client.query(
+          "UPDATE orders SET status=$1, payment_status=$2, payment_method=$3, paid_at=CASE WHEN $2='paid' THEN COALESCE(paid_at,NOW()) ELSE paid_at END WHERE id=$4 RETURNING *",
+          [status, paymentStatus, method, id]
+        );
+        const ids = normalizeItems(order.items).map(item => Number(item.productId));
+        if (status === 'cancelado') await client.query("UPDATE products SET status='disponivel' WHERE id=ANY($1::int[]) AND status='reservado'", [ids]);
+        else if (paymentStatus === 'paid') await client.query("UPDATE products SET status='vendido' WHERE id=ANY($1::int[])", [ids]);
+        await client.query('COMMIT');
+        return res.status(200).json({ order: publicOrder(updated.rows[0]) });
+      } catch (error) { await client.query('ROLLBACK'); throw error; }
+      finally { client.release(); }
     }
 
     return res.status(405).json({ erro: 'Método não permitido.' });

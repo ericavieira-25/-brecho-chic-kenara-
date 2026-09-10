@@ -22,19 +22,16 @@ export default function Footer() {
             Moda consciente e estilo único. Peças de segunda mão com história e personalidade.
           </p>
           <div className={styles.social}>
-            <a href="#" className={styles.socialLink} aria-label="Instagram">📷</a>
-            <a href="#" className={styles.socialLink} aria-label="Pinterest">📌</a>
-            <a href="#" className={styles.socialLink} aria-label="TikTok">🎵</a>
+            <a href="https://www.instagram.com/chic.kenara/" target="_blank" rel="noopener noreferrer" className={styles.socialLink} aria-label="Instagram">📷</a>
+
           </div>
         </div>
 
         {/* Institucional */}
         <div className={styles.links}>
           <h4 className={styles.colTitle}>Institucional</h4>
-          <Link to="/catalogo" className={styles.link}>Sobre nós</Link>
-          <Link to="/catalogo" className={styles.link}>Contato</Link>
-          <Link to="/catalogo" className={styles.link}>Política de Privacidade</Link>
-          <Link to="/catalogo" className={styles.link}>Termos de Uso</Link>
+          <a href="/#sobre" className={styles.link}>Sobre nós</a>
+          <a href="https://wa.me/5555997181206" className={styles.link}>Contato</a>
         </div>
 
         {/* Navegação */}

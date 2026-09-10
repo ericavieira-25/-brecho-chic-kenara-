@@ -6,15 +6,13 @@
  * dos repasses de 75%.
  */
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Navigate, useParams, Link } from 'react-router-dom';
 
 import { useGuard } from '../../hooks/useGuard.js';
 import { USER_ROLES } from '../../data/roles.js';
 import { getSupplierById } from '../../data/suppliers.js';
-import { products } from '../../data/products.js';
-import { mockOrders } from '../../data/orders.js';
-import { mergeOrdersWithMock } from '../../data/orderService.js';
+import { useStoreData } from '../../hooks/useStoreData.js';
 
 import {
   calculateOrderSplitBySupplier,
@@ -88,6 +86,7 @@ function getItemTotal(item) {
 }
 
 export default function SupplierDetails() {
+  const { orders: allOrders, products, error: dataError } = useStoreData();
   const { isAuth, hasRole } = useGuard();
   const { supplierId } = useParams();
 
@@ -103,8 +102,8 @@ export default function SupplierDetails() {
    */
   const supplier = getSupplierById(supplierId);
 
-  const data = useMemo(() => {
-    const allOrders = mergeOrdersWithMock(mockOrders);
+  const data = (() => {
+
 
     /*
      * Produtos da fornecedora.
@@ -306,7 +305,7 @@ export default function SupplierDetails() {
       pendingAmount:
         roundCurrency(pendingAmount),
     };
-  }, [supplierId, forceUpdate]);
+  })();
 
   /*
    * Proteção de autenticação.
@@ -399,6 +398,7 @@ export default function SupplierDetails() {
         </Link>
 
         <div>
+          {dataError && <p role="alert">{dataError}</p>}
           <h1>{supplier.name}</h1>
 
           <p className={styles.subtitle}>

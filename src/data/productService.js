@@ -32,7 +32,7 @@ async function request(url, options = {}) {
     throw new Error(errorData.erro || 'Erro ao acessar a API de produtos.');
   }
 
-  return response.json();
+  return response.status === 204 ? null : response.json();
 }
 
 function normalizeProduct(product) {
@@ -40,6 +40,8 @@ function normalizeProduct(product) {
 
   return {
     ...product,
+    id: Number(product.id),
+    price: Number(product.price),
     createdAt: product.createdAt || product.created_at || null,
 
     categoryName:
@@ -129,7 +131,8 @@ export async function getAllProducts() {
       error
     );
 
-    return localProducts.map(enrichProduct);
+    if (import.meta.env.VITE_DEMO_MODE === 'true') return localProducts.map(enrichProduct);
+    throw new Error('Não foi possível carregar o catálogo. Tente novamente em instantes.');
   }
 
 }
@@ -420,4 +423,9 @@ export async function getPriceRange() {
     min: Math.min(...prices),
     max: Math.max(...prices),
   };
+}
+
+export async function updateProduct(productId, product) {
+  const data = await request(`${API_URL}?id=${encodeURIComponent(productId)}`, { method: 'PATCH', body: JSON.stringify(product) });
+  return enrichProduct(data.produto);
 }

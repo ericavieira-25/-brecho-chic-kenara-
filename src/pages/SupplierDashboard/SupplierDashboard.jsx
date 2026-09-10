@@ -8,9 +8,7 @@
 import { useMemo } from 'react';
 import { useGuard } from '../../hooks/useGuard.js';
 import { getSupplierById } from '../../data/suppliers.js';
-import { products } from '../../data/products.js';
-import { mockOrders } from '../../data/orders.js';
-import { mergeOrdersWithMock } from '../../data/orderService.js';
+import { useStoreData } from '../../hooks/useStoreData.js';
 import { calculateOrderSplitBySupplier, roundCurrency } from '../../data/financial.js';
 import styles from './SupplierDashboard.module.css';
 
@@ -26,19 +24,20 @@ function formatDate(dateStr) {
 }
 
 export default function SupplierDashboard() {
+  const { orders: allOrders, products, error: dataError } = useStoreData();
   const { user } = useGuard();
   const supplierId = user?.supplierId;
   const supplier = supplierId ? getSupplierById(supplierId) : null;
   const data = useMemo(() => {
     if (!supplierId || !supplier) return { products: [], orders: [], orderItems: [], totalSales: 0, totalProductsSold: 0, supplierShare: 0, availableProducts: 0 };
-    const allOrders = mergeOrdersWithMock(mockOrders);
+
     const supplierProducts = products.filter((p) => p.supplierId === supplierId);
     const supplierOrders = allOrders.filter((order) => order.items.some((item) => item.supplierId === supplierId));
     const supplierOrderItems = supplierOrders.flatMap((order) => order.items.filter((item) => item.supplierId === supplierId));
     const split = calculateOrderSplitBySupplier(supplierOrderItems);
     const supplierSplit = split.bySupplier.find((s) => s.supplierId === supplierId);
     return { products: supplierProducts, orders: supplierOrders, orderItems: supplierOrderItems, totalSales: roundCurrency(supplierSplit?.grossAmount || 0), totalProductsSold: supplierOrderItems.reduce((sum, item) => sum + item.quantity, 0), supplierShare: roundCurrency(supplierSplit?.supplierShare || 0), availableProducts: supplierProducts.filter((p) => p.available).length };
-  }, [supplierId, supplier]);
+  }, [supplierId, supplier, allOrders, products]);
 
   // Obter ID da fornecedora do usuário autenticado
   if (!supplierId) {
@@ -67,7 +66,7 @@ export default function SupplierDashboard() {
   // Processar dados - APENAS da fornecedora autenticada (usando pedidos reais + demo)
   /* Data is derived before authorization branches to preserve hook order. */
   /*
-    const allOrders = mergeOrdersWithMock(mockOrders);
+
     
     // Produtos APENAS desta fornecedora
     const supplierProducts = products.filter((p) => p.supplierId === supplierId);
@@ -119,7 +118,8 @@ export default function SupplierDashboard() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h1>Painel da Fornecedora</h1>
+        {dataError && <p role="alert">{dataError}</p>}
+          <h1>Painel da Fornecedora</h1>
         <p className={styles.subtitle}>
           Bem-vinda, <strong>{supplier.name}</strong>
         </p>

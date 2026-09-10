@@ -1,177 +1,45 @@
-import { createContext, useContext, useState, useCallback } from 'react';
-import { useLocalStorage } from '../hooks/useLocalStorage';
-import { demoUsers } from '../data/mockUser';
-import { USER_ROLES } from '../data/roles';
-
+import { createContext, useContext, useState, useCallback, useEffect } from 'react';
 const AuthContext = createContext(null);
-
 export function AuthProvider({ children }) {
-  const [user, setUser] = useLocalStorage('brecho_user', null);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-
-  const login = useCallback(async (email, password) => {
-    setError('');
-
-    const normalizedEmail = String(email ?? '').trim().toLowerCase();
-
-    try {
-      const response = await fetch('/api/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ action: 'login', email: normalizedEmail, password }),
-      });
-      const data = await response.json().catch(() => ({}));
-      if (response.ok && data.user) {
-        setUser(data.user);
-        return true;
-      }
-      if (![404, 405, 500, 502, 503].includes(response.status)) {
-        setError(data.erro || 'E-mail ou senha inválidos.');
-        return false;
-      }
-    } catch {
-      // The demo accounts remain available when the API is not deployed.
-    }
-
-    const matchedUser = demoUsers.find(
-      (candidate) =>
-        candidate.email.toLowerCase() === normalizedEmail &&
-        String(candidate.password) === String(password ?? '')
-    );
-    if (!matchedUser) {
-      setError('E-mail ou senha inválidos.');
-      return false;
-    }
-
-    const { password: _pw, ...safeUser } = matchedUser;
-    setUser(safeUser);
-    return true;
-  }, [setUser]);
-
-  const register = useCallback(async (name, email, password) => {
+  useEffect(() => {
+    let active = true;
+    fetch('/api/users', { credentials: 'include' }).then(async (res) => {
+      const data = await res.json();
+      if (active) setUser(res.ok ? data.user : null);
+    }).catch(() => {}).finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, []);
+  const authenticate = useCallback(async (body, admin = false) => {
     setError('');
     try {
       const response = await fetch('/api/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ action: 'register', name, email, password }),
+        method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...body, email: String(body.email || '').trim().toLowerCase(), admin }),
       });
-      const data = await response.json().catch(() => ({}));
-      if (response.ok && data.user) {
-        setUser(data.user);
-        return true;
-      }
-      if (![404, 405, 500, 502, 503].includes(response.status)) {
-        setError(data.erro || 'Não foi possível criar a conta.');
-        return false;
-      }
-    } catch {
-      // Fall back to the original local demo behavior without an API.
-    }
-
-    const newUser = {
-      id: `user-${Date.now()}`,
-      name: String(name).trim(),
-      email: String(email).trim().toLowerCase(),
-      role: USER_ROLES.CLIENT,
-      avatar: `https://picsum.photos/seed/user-${Date.now()}/200/200`,
-      createdAt: new Date().toISOString().split('T')[0],
-    };
-    setUser(newUser);
-    return true;
-  }, [setUser]);
-
-  const logout = useCallback(() => {
-    setUser(null);
-    fetch('/api/users', { method: 'DELETE', credentials: 'include' }).catch(() => {});
-    fetch('/api/auth', { method: 'DELETE', credentials: 'include' });
-  }, [setUser]);
-
-  const adminLogin = useCallback(async (email, password) => {
-    setError('');
-    let apiUnavailable = false;
-
-    try {
-      const response = await fetch('/api/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ action: 'login', email, password }),
-      });
-      const data = await response.json().catch(() => ({}));
-      if (response.ok && data.user) {
-        if (data.user.role !== USER_ROLES.ADMIN) {
-          setError('Acesso restrito à administradora.');
-          return false;
-        }
-        setUser(data.user);
-        return true;
-      }
-      apiUnavailable = [404, 405, 500, 502, 503].includes(response.status);
-      if (!apiUnavailable) {
-        setError(data.erro || 'E-mail ou senha inválidos.');
-        return false;
-      }
-    } catch {
-      apiUnavailable = true;
-    }
-
-    // Keep the existing admin-only endpoint as a compatibility fallback.
-    if (apiUnavailable) try {
-      const response = await fetch('/api/auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        const demoAdmin = demoUsers.find(
-          (candidate) =>
-            candidate.email === email &&
-            candidate.role === USER_ROLES.ADMIN &&
-            String(candidate.password) === String(password)
-        );
-        if (demoAdmin && [404, 405, 500, 502, 503].includes(response.status)) {
-          const { password: _password, ...safeUser } = demoAdmin;
-          setUser(safeUser);
-          return true;
-        }
-        setError(data.erro || 'Não foi possível entrar.');
-        return false;
-      }
-      const matchedUser = demoUsers.find((candidate) => candidate.email === email);
-      if (matchedUser) {
-        const { password: _password, ...safeUser } = matchedUser;
-        setUser(safeUser);
-      }
+      const data = await response.json();
+      if (!response.ok || !data.user) throw new Error(data.erro || 'Não foi possível entrar.');
+      localStorage.removeItem('brecho_orders_real');
+      localStorage.removeItem('brecho_last_order_created');
+      setUser(data.user);
       return true;
-    } catch {
-      const demoAdmin = demoUsers.find(
-        (candidate) =>
-          candidate.email === email &&
-          candidate.role === USER_ROLES.ADMIN &&
-          String(candidate.password) === String(password)
-      );
-      if (demoAdmin) {
-        const { password: _password, ...safeUser } = demoAdmin;
-        setUser(safeUser);
-        return true;
-      }
-      setError('Não foi possível entrar.');
-      return false;
-    }
-  }, [setUser]);
-
-  return (
-    <AuthContext.Provider value={{ user, login, adminLogin, logout, register, error, setError }}>
-      {children}
-    </AuthContext.Provider>
-  );
+    } catch (err) { setError(err.message || 'Serviço indisponível. Tente novamente.'); return false; }
+  }, []);
+  const login = useCallback((email, password) => authenticate({ action: 'login', email, password }), [authenticate]);
+  const adminLogin = useCallback((email, password) => authenticate({ action: 'login', email, password }, true), [authenticate]);
+  const register = useCallback((name, email, password) => authenticate({ action: 'register', name, email, password }), [authenticate]);
+  const logout = useCallback(async () => {
+    const response = await fetch('/api/users', { method: 'DELETE', credentials: 'include' });
+    if (!response.ok) throw new Error('Não foi possível sair. Tente novamente.');
+    localStorage.removeItem('brecho_user');
+    localStorage.removeItem('brecho_orders_real');
+    localStorage.removeItem('brecho_last_order_created');
+    setUser(null);
+  }, []);
+  return <AuthContext.Provider value={{ user, loading, login, adminLogin, register, logout, error, setError, setUser }}>{loading ? <p role="status">Carregando sessão…</p> : children}</AuthContext.Provider>;
 }
-
 export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error('useAuth must be used inside AuthProvider');

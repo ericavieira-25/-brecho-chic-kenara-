@@ -8,7 +8,7 @@
  * - Controle separado do pedido e do pagamento
  */
 
-import { products } from './products.js';
+
 import { calculateOrderSplitBySupplier, roundCurrency } from './financial.js';
 
 const REAL_ORDERS_KEY = 'brecho_orders_real';
@@ -103,7 +103,6 @@ function saveRealOrders(orders) {
     localStorage.setItem(REAL_ORDERS_KEY, JSON.stringify(orders));
   } catch (error) {
     console.error('Erro ao salvar pedidos reais:', error);
-    throw error;
   }
 }
 
@@ -144,19 +143,13 @@ async function requestOrders(path, options = {}) {
   return data;
 }
 
-function syncOrderChange(order) {
-  requestOrders(`?id=${encodeURIComponent(order.id)}`, {
-    method: 'PATCH',
-    body: JSON.stringify({
-      id: order.id,
-      status: order.status,
-      paymentStatus: order.paymentStatus,
-      paymentMethod: order.paymentMethod,
-      paidAt: order.paidAt,
-    }),
-  }).catch((error) => {
-    console.warn('Alteração mantida apenas no modo local:', error.message);
+async function syncOrderChange(order) {
+  const data = await requestOrders('?id=' + encodeURIComponent(order.id), {
+    method: 'PATCH', body: JSON.stringify(order),
   });
+  const persisted = normalizeOrder(data.order);
+  saveOrder(persisted);
+  return persisted;
 }
 
 /**
@@ -172,7 +165,7 @@ export async function fetchOrdersByCustomerId(customerId) {
     return remoteOrders.filter((order) => order.customerId === customerId);
   } catch (error) {
     console.warn('Usando pedidos locais:', error.message);
-    return getOrdersByCustomerId(customerId);
+    return [];
   }
 }
 
@@ -184,7 +177,7 @@ export async function fetchOrderById(orderId) {
     return order;
   } catch (error) {
     console.warn('Usando pedido local:', error.message);
-    return getOrderById(orderId);
+    return null;
   }
 }
 
@@ -216,20 +209,6 @@ export async function createOrder({
 
   if (!cartItems || cartItems.length === 0) {
     throw new Error('Carrinho vazio');
-  }
-
-  const unavailableProducts = cartItems.filter((item) => {
-    const product = products.find((p) => p.id === item.id);
-
-    return !product || !product.available;
-  });
-
-  if (unavailableProducts.length > 0) {
-    throw new Error(
-      `Alguns produtos não estão mais disponíveis: ${unavailableProducts
-        .map((p) => p.name)
-        .join(', ')}`
-    );
   }
 
   const orderItems = cartItems.map((item) => ({
@@ -268,21 +247,10 @@ export async function createOrder({
     total: roundCurrency(total),
   };
 
-  // Cache otimista mantém a experiência demo quando a API não está disponível.
-  saveOrder(order);
-
-  try {
-    const data = await requestOrders('', {
-      method: 'POST',
-      body: JSON.stringify(order),
-    });
-    const persistedOrder = normalizeOrder(data.order);
-    saveOrder(persistedOrder);
-    return persistedOrder;
-  } catch (error) {
-    console.warn('Pedido mantido apenas no modo local:', error.message);
-    return order;
-  }
+  const data = await requestOrders('', { method: 'POST', body: JSON.stringify(order) });
+  const persistedOrder = normalizeOrder(data.order);
+  saveOrder(persistedOrder);
+  return persistedOrder;
 }
 
 /**
@@ -324,12 +292,13 @@ export function getOrdersBySupplier(supplierId) {
 export function mergeOrdersWithMock(mockOrders) {
   const realOrders = getRealOrders();
 
-  return [...mockOrders, ...realOrders]
+  return [...(import.meta.env?.VITE_DEMO_MODE === 'true' ? mockOrders : []), ...realOrders]
     .map(normalizeOrder)
+    .filter(order => order.paymentStatus === 'paid')
     .sort((a, b) => new Date(b.date) - new Date(a.date));
 }
 
-export function updateOrderStatus(orderId, newStatus) {
+export async function updateOrderStatus(orderId, newStatus) {
   const realOrders = getRealOrders();
   const order = realOrders.find((o) => o.id === orderId);
 
@@ -357,16 +326,13 @@ export function updateOrderStatus(orderId, newStatus) {
     order.paymentStatus = PAYMENT_STATUS.CANCELED;
   }
 
-  saveRealOrders(realOrders);
-  syncOrderChange(order);
-
-  return order;
+  return await syncOrderChange(order);
 }
 
 /**
  * Define a forma de pagamento escolhida
  */
-export function updatePaymentMethod(
+export async function updatePaymentMethod(
   orderId,
   paymentMethod
 ) {
@@ -393,10 +359,7 @@ export function updatePaymentMethod(
   order.paymentMethod = paymentMethod;
   order.paymentStatus = PAYMENT_STATUS.PROCESSING;
 
-  saveRealOrders(realOrders);
-  syncOrderChange(order);
-
-  return order;
+  return await syncOrderChange(order);
 }
 
 /**
@@ -407,7 +370,7 @@ export function updatePaymentMethod(
  * de demonstração. Em produção, a confirmação deve vir
  * do provedor de pagamento no backend.
  */
-export function confirmPayment(orderId) {
+export async function confirmPayment(orderId) {
   const realOrders = getRealOrders();
 
   const order = realOrders.find(
@@ -428,16 +391,13 @@ export function confirmPayment(orderId) {
   // Depois do pagamento, o pedido entra no processamento
   order.status = ORDER_STATUS.PROCESSING;
 
-  saveRealOrders(realOrders);
-  syncOrderChange(order);
-
-  return order;
+  return await syncOrderChange(order);
 }
 
 /**
  * Marca o pagamento como falho
  */
-export function failPayment(orderId) {
+export async function failPayment(orderId) {
   const realOrders = getRealOrders();
 
   const order = realOrders.find(
@@ -450,16 +410,13 @@ export function failPayment(orderId) {
 
   order.paymentStatus = PAYMENT_STATUS.FAILED;
 
-  saveRealOrders(realOrders);
-  syncOrderChange(order);
-
-  return order;
+  return await syncOrderChange(order);
 }
 
 /**
  * Cancela um pedido
  */
-export function cancelOrder(orderId) {
+export async function cancelOrder(orderId) {
   const realOrders = getRealOrders();
 
   const order = realOrders.find(
@@ -479,10 +436,7 @@ export function cancelOrder(orderId) {
   order.status = ORDER_STATUS.CANCELED;
   order.paymentStatus = PAYMENT_STATUS.CANCELED;
 
-  saveRealOrders(realOrders);
-  syncOrderChange(order);
-
-  return order;
+  return await syncOrderChange(order);
 }
 
 /**

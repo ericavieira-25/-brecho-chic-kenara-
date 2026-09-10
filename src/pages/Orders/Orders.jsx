@@ -79,7 +79,7 @@ export default function Orders() {
                       </div>
                       <Badge variant={statusVariant[order.status] || 'default'}>
                         {order.status === 'aguardando_pagamento'
-                          ? 'Aguardando pagamento'
+                          ? (order.paymentStatus === 'processing' ? 'Aguardando conferência do PIX' : 'Aguardando pagamento')
                           : getStatusLabel(order.status)}
                       </Badge>
                     </div>
@@ -102,7 +102,7 @@ export default function Orders() {
 
                   <div className={styles.orderFooter}>
                     <span className={styles.orderTotal}>Total: {formatPrice(order.total)}</span>
-                    {order.status === 'aguardando_pagamento' && (
+                    {order.status === 'aguardando_pagamento' && order.paymentStatus !== 'processing' && (
                       <Link to={`/pagamento/pix/${order.id}`}>
                         <Button variant="primary">💳 Pagar com PIX</Button>
                       </Link>

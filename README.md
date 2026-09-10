@@ -1,224 +1,61 @@
-# 🌸 Brechó Chic Kenara
+# Brechó Chic Kenara
 
-**E-commerce de moda sustentável com painel administrativo e dashboard de fornecedoras.**
+Loja React + Vite, com API Node e PostgreSQL. A API local utiliza os mesmos handlers de `api/` usados na Vercel.
 
-Um projeto React + Vite completo com:
-- ✅ Catálogo de produtos
-- ✅ Carrinho de compras
-- ✅ Sistema de pedidos real com pagamento PIX
-- ✅ Painel administrativo (Dashboard + Gerenciamento de Fornecedoras)
-- ✅ Painel da fornecedora (Histórico de vendas e produtos)
-- ✅ Controle financeiro (75% fornecedora / 25% administradora)
-- ✅ Sistema de papéis e permissões (Cliente, Fornecedora, Admin)
-- ✅ Produtos persistidos em PostgreSQL via API
-- ✅ Disponibilidade de produtos
+## Executar localmente
 
----
+Requer Node.js 22.12+ (verifique também os requisitos das dependências instaladas) e PostgreSQL acessível.
 
-## 🚀 Como Começar
-
-### 1. Instalação Local
-
-**Pré-requisitos:**
-- Node.js 16+ e npm
-
-**Passos:**
-
-```bash
-# Clone o repositório
-git clone https://github.com/seu-usuario/brecho-chic-kenara.git
-cd brecho-chic-kenara
-
-# Instale as dependências
+```powershell
 npm install
-
-# Inicie o servidor de desenvolvimento
+npm --prefix server install
 npm run dev
 ```
 
-O app estará disponível em: `http://localhost:5173`
+Abra http://localhost:5173. A API escuta em http://localhost:3000. `npm run dev` inicia frontend e API juntos. Para iniciar separadamente, use `npm run dev:web` e `npm run dev:api`.
 
----
+Configure em `server/.env` (local) ou nas variáveis da hospedagem:
 
-## 📚 Contas de Teste
-
-| Papel | E-mail | Senha |
-|-------|--------|-------|
-| Cliente | `demo@brecho.com` | `123456` |
-| Fornecedora | `fornecedora@brecho.com` | `123456` |
-| Administradora | `admin@brecho.com` | `123456` |
-
----
-
-## 🔨 Comandos Disponíveis
-
-```bash
-npm run dev       # Inicia servidor de desenvolvimento
-npm run build     # Build para produção
-npm run preview   # Visualiza o build localmente
-npm run lint      # Verifica qualidade do código
+```dotenv
+DATABASE_URL=postgresql://USUARIO:SENHA@HOST:5432/BANCO
+AUTH_SECRET=SEGREDO_ALEATORIO_LONGO
 ```
 
----
+Também são aceitas POSTGRES_URL, POSTGRES_URL_NON_POOLING e POSTGRES_PRISMA_URL. Não publique arquivos `.env` nem credenciais. O servidor local lê `server/.env` e depois `.env.local`, preservando as variáveis existentes do processo.
 
-## 📦 Build e Deploy
+As tabelas são criadas/atualizadas pela API. Usuários existentes são preservados. O cadastro público cria somente clientes. Não há senha administrativa padrão nem rota pública de redefinição. Uma conta administrativa existente deve ser usada; para uma instalação nova, o responsável pelo banco precisa atribuir o papel `administradora` à conta autorizada.
 
-### Opção 1: Vercel (Recomendado)
+## Compras e PIX
 
-1. Faça push para GitHub
-2. Vá para [vercel.com](https://vercel.com)
-3. Clique "Import Project" e selecione o repositório
-4. Vercel faz deploy automaticamente
-5. URL pública gerada automaticamente
+- Cada peça é única: uma unidade por produto.
+- O backend determina preços e frete a partir do catálogo; valores enviados pelo navegador não são usados como cobrança.
+- O pedido e a reserva de estoque são salvos na mesma transação. Uma peça reservada deixa de estar disponível.
+- O botão “Já paguei” informa o pagamento para conferência. Não comprova recebimento.
+- A administradora confere a conta bancária e confirma o recebimento no painel. Só então o pedido é marcado como pago e a peça como vendida.
+- A administradora pode cancelar um pedido ainda não pago e liberar as peças. As reservas não expiram automaticamente: pedidos abandonados precisam ser cancelados no painel.
+- Falhas de conexão não geram contas, pedidos ou pagamentos fictícios no navegador.
+- Relatórios de vendas consideram pedidos pagos. Repasses a fornecedoras ainda usam os controles locais existentes; não são transferências bancárias automáticas.
 
-### Opção 2: Netlify
+## Validação
 
-1. Faça push para GitHub
-2. Vá para [netlify.com](https://netlify.com)
-3. Clique "New site from Git"
-4. Selecione o repositório
-5. Configure e deploy
-
-### Opção 3: Build Local
-
-```bash
+```powershell
+npm test
+npm run lint
 npm run build
 ```
 
-Arquivos compilados em `./dist/` prontos para upload em qualquer hosting.
+Os testes usam banco simulado e cobrem autenticação, autorização, preços, reservas, cancelamento, exclusão de produtos e arredondamento financeiro. Não movimentam pedidos reais.
 
----
+`npm run test:integration` verifica cadastro, login e compra no PostgreSQL configurado, em um esquema temporário dentro de uma transação revertida ao terminar. Requer permissão para criar esquema. Não altera registros existentes.
 
-## 🏗️ Estrutura do Projeto
+## Publicação
 
-```
-src/
-├── components/        # Componentes React reutilizáveis
-│   ├── features/     # Barra de busca, carrinho, filtros
-│   ├── layout/       # Header, Footer, Layout
-│   ├── ui/           # Botão, Modal, Badge, etc
-│   └── admin/        # Componentes administrativos
-├── context/          # Context API (Auth, Cart, Favorites)
-├── data/             # Dados e serviços
-│   ├── products.js          # Catálogo de produtos
-│   ├── orderService.js      # Gestão de pedidos reais
-│   ├── financial.js         # Cálculos financeiros (75/25)
-│   ├── orders.js            # Pedidos de demonstração
-│   ├── roles.js             # Sistema de papéis
-│   └── suppliers.js         # Dados de fornecedoras
-├── hooks/            # Custom hooks (useGuard, useLocalStorage, etc)
-├── pages/            # Páginas da aplicação
-├── styles/           # Estilos globais
-└── utils/            # Utilitários (formatadores, etc)
-```
+A configuração Vercel existente encaminha `/api/*` para os handlers e as outras rotas para a aplicação React. Configure DATABASE_URL e AUTH_SECRET no ambiente de produção antes de publicar. Um upload apenas de `dist/` não fornece autenticação, banco ou checkout.
 
----
+`npm run preview` exibe o frontend compilado e utiliza a API local na porta 3000. Publicação e conferência de pagamentos reais são etapas separadas dos testes locais.
 
-## 🔒 Autenticação e Autorização
+Antes de abrir a operação ao público, fornecer os textos reais de privacidade e termos da loja. Os links que apontavam incorretamente para o catálogo foram retirados. Repasses a fornecedoras ainda são controles locais, e reservas não expiram automaticamente.
 
-- **PostgreSQL** para usuários, produtos e pedidos; os endpoints Vercel criam as
- tabelas automaticamente na primeira requisição
-- **crypto.scrypt** para armazenar senhas sem texto puro
-- **localStorage** como cache e fallback das contas demo quando a API/banco não
- estiver disponível
-- **Context API** para estado global (usuário, carrinho, favoritos)
-- **ProtectedRoute** para proteção de rotas baseada em papel
+## Demonstração opcional
 
-**Papéis disponíveis:**
-- `cliente` — Acesso a catálogo, carrinho, pedidos
-- `fornecedora` — Acesso ao dashboard de vendas
-- `administradora` — Acesso ao painel admin completo
-
----
-
-## 💰 Sistema Financeiro
-
-- **75% do valor** → Fornecedora
-- **25% do valor** → Administradora
-- **Métrica 10%** → Separada (para análise)
-
-Todos os cálculos estão centralizados em `src/data/financial.js`.
-
----
-
-## 📱 Tecnologias
-
-- **React 19** — Interface de usuário
-- **Vite 8.2** — Build tool (rápido!)
-- **React Router 7** — Roteamento
-- **CSS Modules** — Estilos isolados
-- **PostgreSQL + API Vercel** — Persistência do catálogo
-
----
-
-## 🛠️ Desenvolvimento
-
-### Adicionar um novo componente
-
-```jsx
-// src/components/ui/MyComponent/MyComponent.jsx
-export default function MyComponent() {
-  return <div>Meu componente</div>;
-}
-```
-
-### Adicionar uma nova página
-
-```jsx
-// src/pages/MyPage/MyPage.jsx
-import styles from './MyPage.module.css';
-
-export default function MyPage() {
-  return <div className={styles.page}>Minha página</div>;
-}
-```
-
-### Adicionar uma nova rota
-
-```jsx
-// src/routes.jsx
-<Route path="/minha-rota" element={<MyPage />} />
-
-// Se precisar proteger:
-<Route
-  path="/minha-rota-privada"
-  element={
-    <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN]}>
-      <MyPage />
-    </ProtectedRoute>
-  }
-/>
-```
-
----
-
-## 🚀 Próximos Passos (Roadmap)
-
-- [x] Backend real com API e PostgreSQL para produtos
-- [x] Autenticação e persistência de usuários e pedidos no backend
-- [ ] Integração com gateway de pagamento real (Stripe, MercadoPago)
-- [ ] Envio de e-mails de confirmação
-- [ ] Notificações em tempo real
-- [ ] Upload real de imagens (AWS S3, Cloudinary)
-- [ ] Testes automatizados
-- [ ] Mobile app (React Native)
-
----
-
-## 📝 Licença
-
-Este projeto é de código aberto para fins educacionais.
-
----
-
-## 🤝 Contribuindo
-
-Sinta-se livre para fazer fork e enviar pull requests!
-
----
-
-## 📞 Suporte
-
-Dúvidas? Abra uma issue no GitHub ou entre em contato.
-
-**Feito com 💚 para a moda sustentável.**
+Em banco descartável de desenvolvimento, ENABLE_DEMO_USERS=true com DEMO_PASSWORD explícita permite criar contas de demonstração. ENABLE_DEMO_PRODUCTS=true permite carregar o catálogo de exemplo num banco vazio. Ambos ficam desativados em produção. VITE_DEMO_MODE=true permite mostrar catálogo de exemplo quando a API falha; não simula pagamento nem cadastro.

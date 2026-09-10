@@ -1,0 +1,6 @@
+tests
+server
+scripts
+.env*
+*.md
+.git

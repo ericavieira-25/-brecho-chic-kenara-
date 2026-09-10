@@ -1,19 +1,24 @@
+import { useConfirmation } from '../../hooks/useConfirmation.jsx';
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import { getAllProducts, deleteProduct } from '../../data/productService.js';
 
 import styles from './AdminProducts.module.css';
 
 export default function AdminProducts() {
+  const [confirmAction, confirmationDialog] = useConfirmation();
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
+  const [errorMessage, setErrorMessage] = useState('');
 
   async function loadProducts() {
     try {
+      setErrorMessage('');
       setProducts(await getAllProducts());
     } catch (error) {
       console.error('Erro ao carregar produtos:', error);
-      setProducts([]);
+      setErrorMessage(error.message || 'Não foi possível carregar as peças.');
     }
   }
 
@@ -22,7 +27,7 @@ export default function AdminProducts() {
   }, []);
 
   async function handleDelete(productId) {
-    const confirmed = window.confirm(
+    const confirmed = await confirmAction(
       'Tem certeza que deseja excluir esta peça?'
     );
 
@@ -35,13 +40,19 @@ export default function AdminProducts() {
       await loadProducts();
     } catch (error) {
       console.error('Erro ao excluir produto:', error);
-      window.alert('Não foi possível excluir a peça.');
+      setErrorMessage(error.message || 'Não foi possível excluir a peça.');
     }
   }
 
   return (
     <main className={styles.page}>
+      {confirmationDialog}
       <div className={styles.container}>
+        {errorMessage && <p role="alert">{errorMessage}</p>}
+        <nav aria-label="Navegação de produtos" style={{display:'flex', gap:'1rem', marginBottom:'1rem'}}>
+          <Link to="/admin">← Painel administrativo</Link>
+          <Link to="/admin/produtos/novo">+ Cadastrar peça</Link>
+        </nav>
 
         <div className={styles.header}>
           <div>
@@ -203,9 +214,7 @@ export default function AdminProducts() {
                               : styles.unavailable
                           }`}
                         >
-                          {product.status === 'disponivel'
-                            ? 'Disponível'
-                            : 'Indisponível'}
+                          {({disponivel:'Disponível', reservado:'Reservada', vendido:'Vendida', indisponivel:'Indisponível'})[product.status] || 'Indisponível'}
                         </span>
                       </td>
 
@@ -216,11 +225,9 @@ export default function AdminProducts() {
                           <button
                             type="button"
                             className={styles.editButton}
-                            onClick={() =>
-                              alert(
-                                'A edição de produtos será implementada na próxima etapa.'
-                              )
-                            }
+                            disabled={['reservado', 'vendido'].includes(product.status)}
+                            title={['reservado', 'vendido'].includes(product.status) ? 'Peças reservadas ou vendidas não podem ser editadas' : 'Editar peça'}
+                            onClick={() => navigate(`/admin/produtos/${product.id}/editar`)}
                           >
                             ✏️ Editar
                           </button>

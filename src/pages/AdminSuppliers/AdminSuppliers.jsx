@@ -8,9 +8,7 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { suppliers } from '../../data/suppliers.js';
-import { products } from '../../data/products.js';
-import { mockOrders } from '../../data/orders.js';
-import { mergeOrdersWithMock } from '../../data/orderService.js';
+import { useStoreData } from '../../hooks/useStoreData.js';
 import {
   calculateOrderSplitBySupplier,
   roundCurrency,
@@ -30,11 +28,12 @@ function formatPrice(value) {
 }
 
 export default function AdminSuppliers() {
+  const { orders: allOrders, products, error: dataError } = useStoreData();
 
   const [, forceUpdate] = useState(0);
 
-  const suppliersData = useMemo(() => {
-    const allOrders = mergeOrdersWithMock(mockOrders);
+  const suppliersData = (() => {
+
 
     return suppliers.map((supplier) => {
       const supplierProducts = products.filter(
@@ -150,7 +149,7 @@ export default function AdminSuppliers() {
         pendingAmount: roundCurrency(pendingAmount),
       };
     });
-  }, [forceUpdate]);
+  })();
 
   const totals = useMemo(() => {
     return {
@@ -215,7 +214,7 @@ export default function AdminSuppliers() {
   }, [suppliersData]);
 
   function handlePayAllForSupplier(supplier) {
-    const allOrders = mergeOrdersWithMock(mockOrders);
+
 
     allOrders.forEach((order) => {
       const hasSupplier = order.items.some(
@@ -234,7 +233,7 @@ export default function AdminSuppliers() {
   }
 
   function handlePendingAllForSupplier(supplier) {
-    const allOrders = mergeOrdersWithMock(mockOrders);
+
 
     allOrders.forEach((order) => {
       const hasSupplier = order.items.some(
@@ -255,7 +254,8 @@ export default function AdminSuppliers() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h1>Gerenciamento de Fornecedoras</h1>
+        {dataError && <p role="alert">{dataError}</p>}
+          <h1>Gerenciamento de Fornecedoras</h1>
 
         <p className={styles.subtitle}>
           Controle de vendas, repasses dos 75% e valores

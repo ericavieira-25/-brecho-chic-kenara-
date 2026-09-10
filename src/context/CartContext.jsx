@@ -12,11 +12,12 @@ export function CartProvider({ children }) {
       return;
     }
 
+    quantity = 1;
     setItems((prev) => {
       const existing = prev.find((i) => i.id === product.id);
       if (existing) {
         return prev.map((i) =>
-          i.id === product.id ? { ...i, quantity: i.quantity + quantity } : i
+          i.id === product.id ? { ...i, quantity: 1 } : i
         );
       }
       return [...prev, { ...product, quantity }];
@@ -28,7 +29,7 @@ export function CartProvider({ children }) {
   }, [setItems]);
 
   const updateQuantity = useCallback((productId, quantity) => {
-    if (quantity < 1) return;
+    if (quantity !== 1) return;
     setItems((prev) =>
       prev.map((i) => (i.id === productId ? { ...i, quantity } : i))
     );
@@ -49,7 +50,7 @@ export function CartProvider({ children }) {
 
   const totalItems = validItems.reduce((sum, i) => sum + i.quantity, 0);
   const subtotal = validItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
-  const shipping = subtotal >= 150 ? 0 : 15.9;
+  const shipping = subtotal === 0 || subtotal >= 150 ? 0 : 15.9;
   const total = subtotal + shipping;
 
   return (

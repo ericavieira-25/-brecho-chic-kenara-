@@ -18,10 +18,8 @@ export function getPool() {
 
   pool = new Pool({
     connectionString,
-    ssl:
-      process.env.NODE_ENV === 'production'
-        ? { rejectUnauthorized: false }
-        : undefined,
+    connectionTimeoutMillis: 10000,
+    query_timeout: 15000,
   });
 
   return pool;
@@ -100,9 +98,14 @@ export async function ensureProductsTable() {
       ADD COLUMN IF NOT EXISTS supplier_id TEXT,
       ADD COLUMN IF NOT EXISTS supplier_name TEXT,
       ADD COLUMN IF NOT EXISTS created_by TEXT,
+      ADD COLUMN IF NOT EXISTS tags JSONB NOT NULL DEFAULT '[]'::jsonb,
       ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'disponivel',
       ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   `);
+
+  await database.query("CREATE SEQUENCE IF NOT EXISTS products_id_seq START 1000000");
+  await database.query("ALTER TABLE products ALTER COLUMN id SET DEFAULT nextval('products_id_seq')");
+  if (process.env.ENABLE_DEMO_PRODUCTS !== 'true' || process.env.NODE_ENV === 'production') return;
 
   /*
    * Se já existem produtos, não duplica os produtos iniciais.

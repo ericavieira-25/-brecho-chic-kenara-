@@ -7,7 +7,7 @@
 
 import { useAuth } from '../context/AuthContext';
 import { canAccessRole, hasRole } from '../data/roles';
-import { canAccess, requireRole } from '../data/permissions';
+import { canAccess } from '../data/permissions';
 
 /**
  * Verifica se o usuário está autenticado.

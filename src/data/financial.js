@@ -23,7 +23,7 @@ export function calculateTenPercentMetric(totalSales) {
 export function calculateItemFinancialSplit(productOrAmount, qty = 1) {
   const amount = Number(productOrAmount?.price ?? productOrAmount ?? 0) * Number(qty || 1);
   const supplierShare = calculateSupplierShare(amount);
-  const adminShare = calculateAdminShare(amount);
+  const adminShare = roundCurrency(amount - supplierShare);
 
   return {
     grossAmount: roundCurrency(amount),
@@ -53,7 +53,7 @@ export function calculateOrderSplitBySupplier(items = []) {
     const current = map.get(supplierId);
     const itemGross = roundCurrency(amount);
     const itemSupplierShare = calculateSupplierShare(itemGross);
-    const itemAdminShare = calculateAdminShare(itemGross);
+    const itemAdminShare = roundCurrency(itemGross - itemSupplierShare);
 
     current.grossAmount = roundCurrency(current.grossAmount + itemGross);
     current.supplierShare = roundCurrency(current.supplierShare + itemSupplierShare);

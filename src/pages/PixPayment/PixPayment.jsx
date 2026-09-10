@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import {
   getOrderById,
   fetchOrderById,
-  confirmPayment,
+  updatePaymentMethod,
 } from '../../data/orderService.js';
 import { formatPrice } from '../../utils/formatters';
 import Button from '../../components/ui/Button/Button';
@@ -27,11 +27,16 @@ export default function PixPayment() {
   const [processing, setProcessing] = useState(false);
   const [copied, setCopied]       = useState(false);
 
+  const [loadedId, setLoadedId] = useState(null);
   useEffect(() => {
-    fetchOrderById(orderId).then((fetched) => {
-      if (fetched) setOrder(fetched);
+    let active = true;
+    fetchOrderById(orderId).then(fetched => {
+      if (active) { setOrder(fetched); setLoadedId(orderId); }
     });
+    return () => { active = false; };
   }, [orderId]);
+
+  if (loadedId !== orderId) return <p role="status">Carregando pedido…</p>;
 
   if (!user) return <Navigate to="/login" replace />;
 
@@ -92,13 +97,13 @@ export default function PixPayment() {
     }
   }
 
-  function handleConfirmPayment() {
+  async function handleConfirmPayment() {
     if (processing) return;
     setProcessing(true);
     try {
-      const updatedOrder = confirmPayment(order.id);
+      const updatedOrder = await updatePaymentMethod(order.id, 'pix');
       setOrder(updatedOrder);
-      navigate('/confirmacao');
+      navigate('/pedidos');
     } catch (error) {
       console.error('Erro ao confirmar pagamento:', error);
       alert(error.message);
@@ -116,7 +121,7 @@ export default function PixPayment() {
           <h1 className={styles.title}>Pagamento via PIX</h1>
           <p className={styles.text}>
             Transfira o valor abaixo para a chave PIX da loja e clique em
-            <strong> "Já paguei"</strong> para confirmar o seu pedido.
+            <strong> "Já paguei"</strong> para solicitar a conferência do pagamento.
           </p>
         </div>
 
@@ -174,7 +179,7 @@ export default function PixPayment() {
           </div>
           <div className={styles.step}>
             <span className={styles.stepNum}>4</span>
-            <span>Clique em <strong>"Já paguei"</strong> para registrar seu pedido</span>
+            <span>Clique em <strong>"Já paguei"</strong> para solicitar a conferência</span>
           </div>
         </div>
 
@@ -201,7 +206,7 @@ export default function PixPayment() {
 
         {/* Ações */}
         <div className={styles.actions}>
-          <Link to={`/pagamento/${order.id}`}>
+          <Link to="/pedidos">
             <Button variant="outline" size="lg" disabled={processing}>
               Voltar
             </Button>

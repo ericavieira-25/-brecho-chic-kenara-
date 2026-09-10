@@ -25,15 +25,16 @@ export default function OrderDetails() {
 
   const [order, setOrder] = useState(() => getOrderById(orderId));
 
+  const [loadedId, setLoadedId] = useState(null);
   useEffect(() => {
     let active = true;
-    fetchOrderById(orderId).then((remoteOrder) => {
-      if (active && remoteOrder) setOrder(remoteOrder);
+    fetchOrderById(orderId).then(fetched => {
+      if (active) { setOrder(fetched); setLoadedId(orderId); }
     });
-    return () => {
-      active = false;
-    };
+    return () => { active = false; };
   }, [orderId]);
+
+  if (loadedId !== orderId) return <p role="status">Carregando pedido…</p>;
 
   if (!user) {
     return (
@@ -44,7 +45,7 @@ export default function OrderDetails() {
     );
   }
 
-  if (!order || order.customerId !== user.id) {
+  if (!order || (order.customerId !== user.id && user.role !== 'administradora')) {
     return (
       <div className={styles.page}>
         <div className={styles.card}>
@@ -68,7 +69,7 @@ export default function OrderDetails() {
 
   const statusText =
     order.status === 'aguardando_pagamento'
-      ? 'Aguardando pagamento'
+      ? (order.paymentStatus === 'processing' ? 'Aguardando conferência do PIX' : 'Aguardando pagamento')
       : getStatusLabel(order.status);
 
   return (
@@ -167,7 +168,7 @@ export default function OrderDetails() {
                   <span>
                     {order.paymentStatus === 'paid'
                       ? 'Pagamento confirmado'
-                      : 'Aguardando pagamento'}
+                      : order.paymentStatus === 'processing' ? 'Aguardando conferência do PIX' : 'Aguardando pagamento'}
                   </span>
                 </div>
               </div>
@@ -354,7 +355,7 @@ export default function OrderDetails() {
             </div>
           </section>
 
-          {order.status === 'aguardando_pagamento' && (
+          {order.status === 'aguardando_pagamento' && order.paymentStatus !== 'processing' && (
             <div className={styles.paymentBox}>
               <div>
                 <strong>
@@ -376,6 +377,7 @@ export default function OrderDetails() {
             </div>
           )}
 
+          {order.paymentStatus === 'processing' && <p role="status">Pagamento informado. A loja está conferindo o recebimento do PIX.</p>}
           {order.paymentStatus === 'paid' && (
             <div className={styles.paidBox}>
               ✅ Pagamento confirmado

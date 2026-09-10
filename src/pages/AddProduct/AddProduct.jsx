@@ -1,10 +1,10 @@
-import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import { useAuth } from '../../context/AuthContext';
 import { categories, sizes, conditions } from '../../data/categories';
 import { suppliers } from '../../data/suppliers';
-import { addProduct } from '../../data/productService.js';
+import { addProduct, getProductById, updateProduct } from '../../data/productService.js';
 import { USER_ROLES } from '../../data/roles.js';
 
 import Input from '../../components/ui/Input/Input';
@@ -55,6 +55,8 @@ function readFileAsDataUrl(file) {
 
 export default function AddProduct() {
   const { user } = useAuth();
+  const { productId } = useParams();
+  const [loadedId, setLoadedId] = useState(null);
   const navigate = useNavigate();
 
   const [form, setForm] = useState(initialForm);
@@ -68,6 +70,19 @@ export default function AddProduct() {
     () => suppliers.filter((supplier) => supplier.status === 'active'),
     []
   );
+
+  useEffect(() => {
+    if (!productId) return;
+    let active = true;
+    getProductById(productId).then(product => {
+      if (!active) return;
+      if (!product) { setError('Peça não encontrada.'); return; }
+      setForm({ ...initialForm, ...Object.fromEntries(Object.entries(product).filter(([, value]) => value != null)), price: String(product.price), originalPrice: product.originalPrice ?? '', tags: (product.tags || []).join(', '), available: product.status === 'disponivel' });
+      setImagePreview(product.photo || product.images?.[0] || '');
+      setLoadedId(productId);
+    }).catch(error => { if (active) setError(error.message); });
+    return () => { active = false; };
+  }, [productId]);
 
   const isAdmin = user?.role === USER_ROLES.ADMIN;
 
@@ -110,8 +125,8 @@ export default function AddProduct() {
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      setError('A imagem deve ter no máximo 5 MB.');
+    if (file.size > 2 * 1024 * 1024) {
+      setError('A imagem deve ter no máximo 2 MB.');
       event.target.value = '';
       return;
     }
@@ -202,12 +217,12 @@ export default function AddProduct() {
 
       const product = {
         name: form.name.trim(),
-        description: form.description.trim(),
+        description: (form.description || '').trim(),
         category: form.category,
         categoryName:
           getOptionLabel(categoryObject) || form.category,
         size: form.size,
-        brand: form.brand.trim(),
+        brand: (form.brand || '').trim(),
         condition: form.condition,
         conditionLabel:
           getOptionLabel(conditionObject) || form.condition,
@@ -230,6 +245,11 @@ export default function AddProduct() {
         createdAt: new Date().toISOString(),
       };
 
+      if (productId) {
+        await updateProduct(productId, product);
+        setSuccess('Peça atualizada com sucesso!');
+        return;
+      }
       await addProduct(product);
 
       setSuccess('Peça cadastrada com sucesso!');
@@ -268,7 +288,7 @@ export default function AddProduct() {
       <section className={styles.container}>
         <div className={styles.header}>
           <div>
-            <h1>Cadastrar peça</h1>
+            <h1>{productId ? 'Editar peça' : 'Cadastrar peça'}</h1>
 
             <p>
               Cadastre uma peça para o catálogo e vincule-a à
@@ -558,7 +578,7 @@ export default function AddProduct() {
             />
 
             <small className={styles.help}>
-              Formatos de imagem aceitos. Tamanho máximo: 5 MB.
+              Formatos de imagem aceitos. Tamanho máximo: 2 MB.
             </small>
 
             {imagePreview && (
@@ -597,7 +617,7 @@ export default function AddProduct() {
             <Button
               type="button"
               onClick={handleCancel}
-              disabled={loading}
+              disabled={loading || Boolean(productId && loadedId !== productId)}
               className={styles.secondaryButton}
             >
               Cancelar
@@ -609,7 +629,7 @@ export default function AddProduct() {
               disabled={loading}
               className={styles.submitButton}
             >
-              {loading ? 'Cadastrando...' : 'Cadastrar peça'}
+              {loading ? 'Salvando...' : productId ? 'Salvar alterações' : 'Cadastrar peça'}
             </Button>
           </div>
         </form>
