@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import InstallApp from '../../features/InstallApp';
 import { useGuard } from '../../../hooks/useGuard';
 import { USER_ROLES } from '../../../data/roles';
 import styles from './Footer.module.css';
@@ -25,6 +26,7 @@ export default function Footer() {
             <a href="https://www.instagram.com/chic.kenara/" target="_blank" rel="noopener noreferrer" className={styles.socialLink} aria-label="Instagram">📷</a>
 
           </div>
+          <InstallApp />
         </div>
 
         {/* Institucional */}
