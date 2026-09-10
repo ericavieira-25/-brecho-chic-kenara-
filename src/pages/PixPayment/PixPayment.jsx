@@ -1,3 +1,4 @@
+import FulfillmentInfo from '../../components/features/FulfillmentInfo';
 import { Navigate, Link, useNavigate, useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
@@ -130,6 +131,7 @@ export default function PixPayment() {
           <span>Valor total do pedido</span>
           <strong>{formatPrice(order.total)}</strong>
           <small>Pedido {order.id}</small>
+          <FulfillmentInfo order={order} />
         </div>
 
         {/* Dados do PIX */}

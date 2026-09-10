@@ -6,7 +6,7 @@ import Button from '../../ui/Button/Button';
 import styles from './CartDrawer.module.css';
 
 export default function CartDrawer({ isOpen, onClose }) {
-  const { items, removeItem, updateQuantity, subtotal, shipping, total, totalItems } = useCart();
+  const { items, removeItem, updateQuantity, subtotal, total, totalItems } = useCart();
   const navigate = useNavigate();
 
   const panel = useDialog(isOpen, onClose);
@@ -65,12 +65,10 @@ export default function CartDrawer({ isOpen, onClose }) {
                 <span>{formatPrice(subtotal)}</span>
               </div>
               <div className={styles.summaryRow}>
-                <span>Frete</span>
-                <span className={shipping === 0 ? styles.free : ''}>{shipping === 0 ? 'Grátis' : formatPrice(shipping)}</span>
+                <span>Recebimento</span>
+                <span>Escolha no carrinho</span>
               </div>
-              {shipping > 0 && (
-                <p className={styles.freeHint}>Faltam {formatPrice(150 - subtotal)} para frete grátis</p>
-              )}
+
               <div className={[styles.summaryRow, styles.totalRow].join(' ')}>
                 <span>Total</span>
                 <span>{formatPrice(total)}</span>

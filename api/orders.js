@@ -19,6 +19,8 @@ function publicOrder(row) {
     paidAt: row.paid_at ? new Date(row.paid_at).toISOString() : null,
     subtotal: Number(row.subtotal),
     shipping: Number(row.shipping),
+    fulfillmentMethod: row.fulfillment_method || null,
+    deliveryAddress: row.delivery_address || null,
     total: Number(row.total),
     items: normalizeItems(row.items),
   };
@@ -78,6 +80,10 @@ export default async function handler(req, res) {
       if (ids.some(id => !Number.isSafeInteger(id) || id <= 0) || new Set(ids).size !== ids.length || body.items.some(item => Number(item.quantity) !== 1)) {
         return res.status(400).json({ erro: 'Cada peça é única: selecione uma unidade por produto.' });
       }
+      const fulfillmentMethod = body.fulfillmentMethod || 'pickup';
+      if (!['pickup','local_delivery'].includes(fulfillmentMethod)) return res.status(400).json({ erro: 'Escolha uma forma de recebimento válida.' });
+      const deliveryAddress = fulfillmentMethod === 'local_delivery' ? String(body.deliveryAddress || '').trim() : null;
+      if (fulfillmentMethod === 'local_delivery' && (!deliveryAddress || deliveryAddress.length > 500)) return res.status(400).json({ erro: 'Informe o endereço para entrega local (até 500 caracteres).' });
       await ensureProductsTable();
       const client = await db.connect();
       try {
@@ -95,11 +101,11 @@ export default async function handler(req, res) {
         }
         const items = products.rows.map(product => ({ productId: product.id, name: product.name, supplierId: product.supplier_id, price: Number(product.price), quantity: 1, brand: product.brand, size: product.size, image: product.photo }));
         const subtotal = Math.round(items.reduce((sum, item) => sum + item.price, 0) * 100) / 100;
-        const shipping = subtotal >= 150 ? 0 : 15.9;
+        const shipping = 0;
         const total = Math.round((subtotal + shipping) * 100) / 100;
         const result = await client.query(
-          "INSERT INTO orders (id, customer_id, customer_name, customer_email, date, status, payment_status, subtotal, shipping, total, items) VALUES ($1,$2,$3,$4,CURRENT_DATE,'aguardando_pagamento','pending',$5,$6,$7,$8::jsonb) RETURNING *",
-          [body.id, session.id, String(body.customerName || ''), session.email, subtotal, shipping, total, JSON.stringify(items)]
+          "INSERT INTO orders (id, customer_id, customer_name, customer_email, date, status, payment_status, subtotal, shipping, total, items, fulfillment_method, delivery_address) VALUES ($1,$2,$3,$4,CURRENT_DATE,'aguardando_pagamento','pending',$5,$6,$7,$8::jsonb,$9,$10) RETURNING *",
+          [body.id, session.id, String(body.customerName || ''), session.email, subtotal, shipping, total, JSON.stringify(items), fulfillmentMethod, deliveryAddress]
         );
         await client.query("UPDATE products SET status = 'reservado' WHERE id = ANY($1::int[])", [ids]);
         await client.query('COMMIT');

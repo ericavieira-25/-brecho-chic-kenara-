@@ -1,3 +1,4 @@
+import FulfillmentInfo from '../../components/features/FulfillmentInfo';
 import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
@@ -203,6 +204,7 @@ export default function Confirmation() {
         </div>
 
         {/* Resumo do pedido */}
+        <FulfillmentInfo order={order} />
         <div className={styles.summary}>
           <div className={styles.summaryRow}>
             <span>Subtotal:</span>
@@ -210,11 +212,11 @@ export default function Confirmation() {
           </div>
 
           <div className={styles.summaryRow}>
-            <span>Frete:</span>
+            <span>Taxa incluída no pedido:</span>
 
             <span>
               {order.shipping === 0
-                ? 'Grátis 🎉'
+                ? formatPrice(0)
                 : formatPrice(order.shipping)}
             </span>
           </div>

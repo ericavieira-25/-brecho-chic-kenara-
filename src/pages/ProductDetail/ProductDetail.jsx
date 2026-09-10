@@ -493,12 +493,11 @@ if (loading) {
 
                 <div>
                   <strong>
-                    Frete grátis
+                    Retirar na loja ou entrega local pela Kenara
                   </strong>
 
                   <span>
-                    em compras acima de
-                    R$ 150,00
+                    Combine o recebimento com a Kenara
                   </span>
                 </div>
               </div>

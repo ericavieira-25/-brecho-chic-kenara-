@@ -1,3 +1,4 @@
+import FulfillmentInfo from '../../components/features/FulfillmentInfo';
 import { Navigate, Link, useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
@@ -339,14 +340,15 @@ export default function OrderDetails() {
             </div>
 
             <div>
-              <span>Frete</span>
+              <span>Taxa incluída no pedido</span>
               <strong>
                 {order.shipping === 0
-                  ? 'Grátis 🎉'
+                  ? formatPrice(0)
                   : formatPrice(order.shipping)}
               </strong>
             </div>
 
+            <FulfillmentInfo order={order} />
             <div className={styles.total}>
               <span>Total</span>
               <strong>

@@ -50,9 +50,7 @@ export function normalizeOrder(order) {
   const total = Number.isFinite(explicitTotal) ? explicitTotal : subtotal;
   const shipping = Number.isFinite(explicitShipping)
     ? explicitShipping
-    : subtotal >= 150
-      ? 0
-      : 15.9;
+    : 0;
 
   return {
     ...order,
@@ -199,6 +197,8 @@ export function getLastCreatedOrderId() {
 export async function createOrder({
   user,
   cartItems,
+  fulfillmentMethod = 'pickup',
+  deliveryAddress = '',
   subtotal,
   shipping,
   total,
@@ -241,6 +241,8 @@ export async function createOrder({
     paidAt: null,
 
     items: orderItems,
+    fulfillmentMethod,
+    deliveryAddress,
 
     subtotal: roundCurrency(subtotal),
     shipping: roundCurrency(shipping),

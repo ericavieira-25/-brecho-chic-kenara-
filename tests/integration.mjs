@@ -58,7 +58,8 @@ try {
   const body={id:'ORDER-isolated',customerId:customer.id,customerName:customer.name,total:0,items:[{productId,quantity:1,price:0}]};
   const checkout=await call(orders,'POST',body,cookie);
   assert.equal(checkout.code,201,JSON.stringify(checkout.body));
-  assert.equal(checkout.body.order.total,65.9);
+  assert.equal(checkout.body.order.total,50);
+  assert.equal(checkout.body.order.fulfillmentMethod,'pickup');
   assert.equal((await call(products,'PATCH',edits,adminCookie,{id:productId})).code,409);
   assert.equal((await call(orders,'POST',{...body,id:'ORDER-second'},cookie)).code,409);
   assert.equal((await call(orders,'PATCH',{paymentStatus:'paid'},cookie,{id:body.id})).code,403);
@@ -71,6 +72,16 @@ try {
   assert.equal((await call(products,'PATCH',edits,adminCookie,{id:productId})).code,409);
   const disposable=await call(products,'POST',{name:'Outra peça',price:10,supplierId:'supplier-test'},adminCookie);
   assert.equal(disposable.code,201);
+  const localBody={...body,id:'ORDER-local-delivery',fulfillmentMethod:'local_delivery',deliveryAddress:'Rua de teste, 10',items:[{productId:disposable.body.produto.id,quantity:1}]};
+  assert.equal((await call(orders,'POST',{...localBody,deliveryAddress:''},cookie)).code,400);
+  assert.equal((await call(orders,'POST',{...localBody,fulfillmentMethod:'invalid'},cookie)).code,400);
+  const delivery=await call(orders,'POST',localBody,cookie);
+  assert.equal(delivery.code,201,JSON.stringify(delivery.body));
+  assert.equal(delivery.body.order.total,10);
+  assert.equal(delivery.body.order.shipping,0);
+  const savedDelivery=await call(orders,'GET',{},cookie,{id:localBody.id});
+  assert.equal(savedDelivery.body.order.fulfillmentMethod,'local_delivery');
+  assert.equal(savedDelivery.body.order.deliveryAddress,'Rua de teste, 10');
   assert.equal((await call(products,'DELETE',{},adminCookie,{id:disposable.body.produto.id})).code,204);
   console.log('Integração PostgreSQL OK: cadastro, login, sessão, restrição administrativa, produto, checkout, reserva, PIX, confirmação e exclusão.');
 } finally {

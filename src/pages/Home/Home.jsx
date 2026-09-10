@@ -109,8 +109,8 @@ useEffect(() => {
           <div className={styles.feature}>
             <span className={styles.featureIcon}>🚚</span>
             <div className={styles.featureText}>
-              <span className={styles.featureTitle}>Frete Grátis</span>
-              <span className={styles.featureDesc}>Em compras acima de R$ 150</span>
+              <span className={styles.featureTitle}>Retirada ou entrega local</span>
+              <span className={styles.featureDesc}>Combine com a Kenara</span>
             </div>
           </div>
           <div className={styles.feature}>

@@ -61,7 +61,8 @@ test('checkout takes prices from catalog and reserves stock in transaction',asyn
     if(sql.startsWith('INSERT INTO orders')) return {rows:[{...row,subtotal:args[4],shipping:args[5],total:args[6],items:JSON.parse(args[7])}]};
   });
   const res=response(); await orders(request('POST',customer,{id:row.id,customerId:customer.id,total:0,items:[{productId:1,quantity:1,price:0}]}),res);
-  assert.equal(res.code,201); assert.equal(res.body.order.total,65.9);
+  assert.equal(res.code,201); assert.equal(res.body.order.total,50);
+  assert.equal(res.body.order.shipping,0);
   assert.ok(calls.some(call=>call.sql.includes('FOR UPDATE')));
   assert.ok(calls.some(call=>call.sql.includes("status = 'reservado'")));
   assert.equal(calls.at(-1).sql,'COMMIT');

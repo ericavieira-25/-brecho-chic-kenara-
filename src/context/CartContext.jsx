@@ -6,6 +6,7 @@ const CartContext = createContext(null);
 
 export function CartProvider({ children }) {
   const [items, setItems] = useLocalStorage('brecho_cart', []);
+  const [fulfillmentMethod, setFulfillmentMethod] = useLocalStorage('kenara_fulfillment', 'pickup');
 
   const addItem = useCallback((product, quantity = 1) => {
     if (!product || product.available === false || !isProductAvailable(product.id)) {
@@ -50,12 +51,12 @@ export function CartProvider({ children }) {
 
   const totalItems = validItems.reduce((sum, i) => sum + i.quantity, 0);
   const subtotal = validItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
-  const shipping = subtotal === 0 || subtotal >= 150 ? 0 : 15.9;
+  const shipping = 0;
   const total = subtotal + shipping;
 
   return (
     <CartContext.Provider
-      value={{ items: validItems, addItem, removeItem, updateQuantity, clearCart, totalItems, subtotal, shipping, total }}
+      value={{ items: validItems, addItem, removeItem, updateQuantity, clearCart, totalItems, subtotal, shipping, total, fulfillmentMethod, setFulfillmentMethod }}
     >
       {children}
     </CartContext.Provider>

@@ -8,11 +8,12 @@ import Button from '../../components/ui/Button/Button';
 import styles from './Cart.module.css';
 
 export default function Cart() {
-  const { items, removeItem, updateQuantity, subtotal, shipping, total, clearCart } = useCart();
+  const { items, removeItem, updateQuantity, subtotal, shipping, total, clearCart, fulfillmentMethod, setFulfillmentMethod } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState(null);
+  const [deliveryAddress, setDeliveryAddress] = useState('');
 
   function handleCheckout() {
     if (!user) {
@@ -25,6 +26,7 @@ export default function Cart() {
       return;
     }
 
+    if (fulfillmentMethod === 'local_delivery' && !deliveryAddress.trim()) { setError('Informe o endereço para entrega local.'); return; }
     handleCreateOrder();
   }
 
@@ -37,6 +39,8 @@ export default function Cart() {
     const order = await createOrder({
       user,
       cartItems: items,
+      fulfillmentMethod,
+      deliveryAddress,
       subtotal,
       shipping,
       total,
@@ -122,17 +126,25 @@ export default function Cart() {
             {/* Summary */}
             <div className={styles.summary}>
               <h3 className={styles.summaryTitle}>Resumo do pedido</h3>
+              <fieldset style={{border:'1px solid #e8e1e4', borderRadius:12, padding:'1rem', marginBottom:'1rem'}} disabled={isProcessing}>
+                <legend>Como deseja receber?</legend>
+                <label style={{display:'block',marginBottom:12}}><input type="radio" name="fulfillment" value="pickup" checked={fulfillmentMethod === 'pickup'} onChange={() => setFulfillmentMethod('pickup')} /> Retirar na loja</label>
+                <label style={{display:'block'}}><input type="radio" name="fulfillment" value="local_delivery" checked={fulfillmentMethod === 'local_delivery'} onChange={() => setFulfillmentMethod('local_delivery')} /> Entrega local pela Kenara</label>
+                {fulfillmentMethod === 'local_delivery' ? <>
+                  <p>Combine a entrega e eventual taxa com a Kenara. O PIX cobre somente as peças.</p>
+                  <label htmlFor="delivery-address">Endereço de entrega</label>
+                  <textarea id="delivery-address" maxLength={500} value={deliveryAddress} onChange={event => setDeliveryAddress(event.target.value)} placeholder="Rua, número, bairro e referência" style={{width:'100%',boxSizing:'border-box',marginTop:8}} />
+                </> : <p>Retirada grátis. Combine o horário com a Kenara.</p>}
+              </fieldset>
               <div className={styles.summaryRow}>
                 <span>Subtotal</span>
                 <span>{formatPrice(subtotal)}</span>
               </div>
               <div className={styles.summaryRow}>
-                <span>Frete</span>
-                <span className={shipping === 0 ? styles.free : ''}>{shipping === 0 ? 'Grátis 🎉' : formatPrice(shipping)}</span>
+                <span>{fulfillmentMethod === 'pickup' ? 'Retirada' : 'Entrega local'}</span>
+                <span>{fulfillmentMethod === 'pickup' ? 'Grátis' : 'A combinar'}</span>
               </div>
-              {shipping > 0 && (
-                <p className={styles.freeHint}>Adicione mais {formatPrice(150 - subtotal)} para frete grátis!</p>
-              )}
+
               <div className={[styles.summaryRow, styles.totalRow].join(' ')}>
                 <span>Total</span>
                 <span>{formatPrice(total)}</span>

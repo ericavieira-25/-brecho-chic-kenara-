@@ -1,3 +1,4 @@
+import FulfillmentInfo from '../../components/features/FulfillmentInfo';
 import { useConfirmation } from '../../hooks/useConfirmation.jsx';
 /**
  * AdminDashboard.jsx
@@ -236,6 +237,7 @@ export default function AdminDashboard() {
                   </strong>
                 </div>
 
+                <FulfillmentInfo order={order} />
                 {order.paymentStatus !== 'paid' && order.status !== 'cancelado' && <div>
                   <span>{order.paymentStatus === 'processing' ? 'Cliente informou pagamento. Confira o recebimento.' : 'Aguardando PIX'}</span>
                   <button disabled={busy} onClick={async () => { if (await confirmAction('O valor entrou na conta da loja? Confirme apenas após conferir o recebimento.')) changeOrder(order); }}>Confirmar recebimento</button>

@@ -61,6 +61,7 @@ export async function ensureOrdersTable() {
       items JSONB NOT NULL DEFAULT '[]'::jsonb
     )
   `);
+  await getPool().query("ALTER TABLE orders ADD COLUMN IF NOT EXISTS fulfillment_method TEXT, ADD COLUMN IF NOT EXISTS delivery_address TEXT");
 }
 
 export async function ensureProductsTable() {
