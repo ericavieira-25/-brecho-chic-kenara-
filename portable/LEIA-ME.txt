@@ -1,0 +1,7 @@
+CHIC KENARA - ACESSO A LOJA
+
+Copie Chic-Kenara.exe para o pendrive e depois para outro computador Windows.
+Clique duas vezes para abrir a loja no navegador padrao.
+Precisa de internet. Nao precisa copiar mais arquivos.
+Este executavel abre a loja publicada; nao contem o sistema nem uma copia do banco de dados.
+Endereço: https://brecho-chic-kenara.vercel.app/

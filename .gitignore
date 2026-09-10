@@ -25,3 +25,4 @@ dist-ssr
 server/.env
 .vercel
 .env*
+/portable/*.exe
